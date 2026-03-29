@@ -22,7 +22,12 @@ use std::time::Duration;
         HTTPS server:\n  \
         scale-bridge --serial-port /dev/ttyUSB0 serve --https-port 443 --bind 127.0.0.1 --cert cert.pem --key key.pem\n\n\
         Set SCALE_BRIDGE_MOCK=1 to use built-in mock transport for testing.",
-    after_help = "Author:\n  Ye Wang <ye@users.noreply.github.com>"
+    after_help = "Author:\n  Ye Wang <ye@users.noreply.github.com>\n\n\
+        Help levels:\n  \
+        `scale-bridge --help` shows top-level connection flags.\n  \
+        `scale-bridge <subcommand> --help` shows options for that subcommand.\n\n\
+        Server help:\n  \
+        Use `scale-bridge serve --help` to see HTTPS listener options such as `--https-port` and `--bind`."
 )]
 pub struct Cli {
     /// Serial port path (e.g. /dev/ttyUSB0 or COM3)

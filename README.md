@@ -57,6 +57,21 @@ The default serial settings used by the CLI are:
 - `7 data bits`
 - `1 stop bit`
 
+## CLI Help
+
+The CLI has two levels of help:
+
+- `scale-bridge --help` shows top-level flags such as `--serial-port`, `--baud`, `--parity`, `--host`, and `--tcp-port`.
+- `scale-bridge <subcommand> --help` shows options specific to that subcommand.
+
+For the HTTPS server, use:
+
+```bash
+scale-bridge serve --help
+```
+
+That is where listener-specific options such as `--https-port` and `--bind` are documented.
+
 ## Debugging Wire Responses
 
 Enable wire logging with `--verbose 1` or higher:
