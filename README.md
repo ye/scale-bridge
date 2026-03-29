@@ -14,6 +14,7 @@ Observed device-specific behavior on that unit:
 - Serial parity must be `even`. The CLI now defaults to `--parity even`.
 - `weight` replies use uppercase units such as `LB`.
 - `status` replies may be standalone ASCII frames such as `S00`.
+- `weight` may also reply with a standalone ASCII status frame such as `S01` instead of a weight payload.
 - Unsupported commands reply with framed `?` responses like `LF ? CR ETX`.
 
 ## Supported Commands On Tested Hardware
@@ -32,6 +33,14 @@ Verified unsupported on the tested `NCI 6720-15`:
 - `diagnostic`
 
 Unsupported commands were observed returning the framed `?` response on the wire.
+
+## Operational Notes For NCI 6720-15
+
+- If the metal weigh tray is lifted or removed, `weight` may return a status-only response instead of a numeric weight.
+- On the tested unit, a standalone `S01` reply was observed in that state and maps to `at_zero=true`.
+- `zero` is recognized by the scale, but it may not actually zero the displayed weight if the current load is outside the scale's allowed zero window.
+- In testing, issuing `zero` with about `1.32 lb` present returned a status reply and the follow-up weight remained non-zero.
+- Treat this as device behavior or configuration/calibration state, not a transport or parser failure.
 
 ## Serial Usage
 

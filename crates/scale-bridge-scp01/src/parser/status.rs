@@ -20,9 +20,14 @@ fn parse_ascii_status(s: &str) -> Result<ScaleStatus, ScaleError> {
         }
     };
 
+    let flag_bits = trimmed
+        .get(1..)
+        .and_then(|rest| u8::from_str_radix(rest, 16).ok())
+        .unwrap_or(0);
+
     Ok(ScaleStatus {
         motion,
-        at_zero: false,
+        at_zero: flag_bits & 0x01 != 0,
         under_capacity: false,
         over_capacity: false,
         ram_error: false,
@@ -330,6 +335,13 @@ mod tests {
         let status = parse_status_bytes(b"M00").unwrap();
         assert!(status.motion);
         assert!(!status.has_error());
+    }
+
+    #[test]
+    fn parses_ascii_at_zero_flag() {
+        let status = parse_status_bytes(b"S01").unwrap();
+        assert!(status.at_zero);
+        assert!(!status.motion);
     }
 
     #[test]

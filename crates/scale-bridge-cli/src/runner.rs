@@ -20,7 +20,14 @@ pub fn run(transport: AnyTransport, command: &Commands) -> Result<(), ScaleError
         }
         Commands::Zero => {
             let resp = scale.send(NciCommand::Zero)?;
-            print_response(&resp, &OutputFormat::Text)
+            match resp {
+                NciResponse::Status(_) => {
+                    print_response(&resp, &OutputFormat::Text)?;
+                    let weight = scale.send(NciCommand::Weight)?;
+                    print_response(&weight, &OutputFormat::Text)
+                }
+                _ => print_response(&resp, &OutputFormat::Text),
+            }
         }
         Commands::Tare => {
             let resp = scale.send(NciCommand::Tare)?;
