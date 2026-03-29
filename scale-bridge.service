@@ -1,0 +1,35 @@
+[Unit]
+Description=scale-bridge — Avery WeighTronix scale communication service
+Documentation=https://github.com/yourusername/scale-bridge
+After=network.target
+# If the scale connects via USB, require udev to have settled first
+After=systemd-udev-settle.service
+
+[Service]
+Type=simple
+# Adjust --port to match your scale's serial device
+ExecStart=/usr/local/bin/scale-bridge --systemd --port /dev/ttyUSB0 weight --watch --interval 1s
+Restart=on-failure
+RestartSec=5s
+
+# Logging — stdout/stderr captured by journald automatically
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=scale-bridge
+
+# Run as a dedicated user for security
+# Create with: useradd -r -s /sbin/nologin scale-bridge
+# User=scale-bridge
+# Add to 'dialout' group for serial access: usermod -aG dialout scale-bridge
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+# Allow access to serial device
+DeviceAllow=/dev/ttyUSB0 rw
+DeviceAllow=/dev/ttyACM0 rw
+
+[Install]
+WantedBy=multi-user.target
