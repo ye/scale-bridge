@@ -4,7 +4,13 @@
 # Usage:
 #   ./install.sh                  # install to /usr/local (default)
 #   PREFIX=/opt/local ./install.sh
+#   PREFIX="$HOME/.local" ./install.sh
 #   ./install.sh --uninstall
+#
+# Behavior:
+#   - Build and asset-generation steps run without sudo.
+#   - sudo is only used for install/uninstall filesystem operations when
+#     the target PREFIX is not writable by the current user.
 #
 # Installs:
 #   $PREFIX/bin/scale-bridge
@@ -38,17 +44,33 @@ need() {
 info()  { echo "  [+] $*"; }
 warn()  { echo "  [!] $*"; }
 
+run_with_optional_sudo() {
+    if [[ "${USE_SUDO:-0}" == "1" ]]; then
+        sudo "$@"
+    else
+        "$@"
+    fi
+}
+
+prefix_writable() {
+    local dir="$1"
+    while [[ "$dir" != "/" && ! -e "$dir" ]]; do
+        dir="$(dirname "$dir")"
+    done
+    [[ -w "$dir" ]]
+}
+
 install_file() {
     local src="$1" dst_dir="$2" dst_name="${3:-$(basename "$1")}"
-    mkdir -p "$dst_dir"
-    install -m 644 "$src" "$dst_dir/$dst_name"
+    run_with_optional_sudo mkdir -p "$dst_dir"
+    run_with_optional_sudo install -m 644 "$src" "$dst_dir/$dst_name"
     info "installed $dst_dir/$dst_name"
 }
 
 install_bin() {
     local src="$1" dst_dir="$2"
-    mkdir -p "$dst_dir"
-    install -m 755 "$src" "$dst_dir/"
+    run_with_optional_sudo mkdir -p "$dst_dir"
+    run_with_optional_sudo install -m 755 "$src" "$dst_dir/"
     info "installed $dst_dir/$(basename "$src")"
 }
 
@@ -56,11 +78,17 @@ install_bin() {
 
 if [[ "${1:-}" == "--uninstall" ]]; then
     echo "Uninstalling $BINARY_NAME from $PREFIX …"
-    rm -f "$BIN_DIR/$BINARY_NAME"
-    rm -f "$MAN_DIR/$BINARY_NAME.1"
-    rm -f "$BASH_COMP_DIR/$BINARY_NAME"
-    rm -f "$ZSH_COMP_DIR/_$BINARY_NAME"
-    rm -f "$FISH_COMP_DIR/$BINARY_NAME.fish"
+    USE_SUDO=0
+    if ! prefix_writable "$PREFIX"; then
+        need sudo
+        USE_SUDO=1
+        warn "using sudo for uninstall under $PREFIX"
+    fi
+    run_with_optional_sudo rm -f "$BIN_DIR/$BINARY_NAME"
+    run_with_optional_sudo rm -f "$MAN_DIR/$BINARY_NAME.1"
+    run_with_optional_sudo rm -f "$BASH_COMP_DIR/$BINARY_NAME"
+    run_with_optional_sudo rm -f "$ZSH_COMP_DIR/_$BINARY_NAME"
+    run_with_optional_sudo rm -f "$FISH_COMP_DIR/$BINARY_NAME.fish"
     echo "Done."
     exit 0
 fi
@@ -83,6 +111,13 @@ mkdir -p "$GEN_DIR"
 
 echo "Installing to $PREFIX …"
 
+USE_SUDO=0
+if ! prefix_writable "$PREFIX"; then
+    need sudo
+    USE_SUDO=1
+    warn "using sudo only for install steps under $PREFIX"
+fi
+
 install_bin "$BUILD_DIR/$BINARY_NAME" "$BIN_DIR"
 install_file "$GEN_DIR/man/$BINARY_NAME.1" "$MAN_DIR"
 
@@ -92,9 +127,9 @@ install_file "$GEN_DIR/completions/$BINARY_NAME.fish" "$FISH_COMP_DIR" "$BINARY_
 
 # Update man database if mandb/makewhatis is available
 if command -v mandb >/dev/null 2>&1; then
-    mandb -q 2>/dev/null || true
+    run_with_optional_sudo mandb -q 2>/dev/null || true
 elif command -v makewhatis >/dev/null 2>&1; then
-    makewhatis "$MAN_DIR" 2>/dev/null || true
+    run_with_optional_sudo makewhatis "$MAN_DIR" 2>/dev/null || true
 fi
 
 echo ""
