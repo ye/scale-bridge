@@ -1,5 +1,5 @@
-use scale_bridge_core::ScaleError;
 use crate::types::{ScaleStatus, WeightRange};
+use scale_bridge_core::ScaleError;
 
 /// Parse the raw status byte slice extracted from an NCI response.
 ///
@@ -22,20 +22,20 @@ pub fn parse_status_bytes(bytes: &[u8]) -> Result<ScaleStatus, ScaleError> {
     let b1 = bytes[0];
     let b2 = bytes[1];
 
-    let motion             = b1 & 0x01 != 0;
-    let at_zero            = b1 & 0x02 != 0;
-    let ram_error          = b1 & 0x04 != 0;
-    let eeprom_error       = b1 & 0x08 != 0;
+    let motion = b1 & 0x01 != 0;
+    let at_zero = b1 & 0x02 != 0;
+    let ram_error = b1 & 0x04 != 0;
+    let eeprom_error = b1 & 0x08 != 0;
 
-    let under_capacity     = b2 & 0x01 != 0;
-    let over_capacity      = b2 & 0x02 != 0;
-    let rom_error          = b2 & 0x04 != 0;
+    let under_capacity = b2 & 0x01 != 0;
+    let over_capacity = b2 & 0x02 != 0;
+    let rom_error = b2 & 0x04 != 0;
     let faulty_calibration = b2 & 0x08 != 0;
-    let more_bytes         = b2 & 0x40 != 0;
+    let more_bytes = b2 & 0x40 != 0;
 
-    let mut net_weight          = false;
-    let mut initial_zero_error  = false;
-    let mut range               = WeightRange::Low;
+    let mut net_weight = false;
+    let mut initial_zero_error = false;
+    let mut range = WeightRange::Low;
 
     if more_bytes {
         if bytes.len() < 3 {
@@ -45,9 +45,13 @@ pub fn parse_status_bytes(bytes: &[u8]) -> Result<ScaleStatus, ScaleError> {
         }
         let b3 = bytes[2];
         // bits 1:0 encode range: 00=Low, 11=High (per SCP-01 spec)
-        range               = if b3 & 0x03 == 0x03 { WeightRange::High } else { WeightRange::Low };
-        net_weight          = b3 & 0x02 != 0;
-        initial_zero_error  = b3 & 0x04 != 0;
+        range = if b3 & 0x03 == 0x03 {
+            WeightRange::High
+        } else {
+            WeightRange::Low
+        };
+        net_weight = b3 & 0x02 != 0;
+        initial_zero_error = b3 & 0x04 != 0;
     }
 
     Ok(ScaleStatus {
@@ -96,10 +100,7 @@ pub fn extract_status_bytes(frame: &[u8]) -> Result<(Vec<u8>, Vec<u8>), ScaleErr
         .ok_or_else(|| ScaleError::ParseError("no CR after status bytes".into()))?;
 
     // Data bytes: between first LF and first CR
-    let data_end = frame
-        .iter()
-        .position(|&b| b == 0x0D)
-        .unwrap_or(frame.len());
+    let data_end = frame.iter().position(|&b| b == 0x0D).unwrap_or(frame.len());
     let data: Vec<u8> = frame[1..data_end].to_vec(); // skip leading LF
 
     let status_bytes = frame[start..end].to_vec();
@@ -120,7 +121,7 @@ mod tests {
     /// Build a status byte with correct odd parity in bit 7.
     fn with_parity(bits_0_6: u8) -> u8 {
         let count = (bits_0_6 & 0x7F).count_ones();
-        if count % 2 == 0 {
+        if count.is_multiple_of(2) {
             bits_0_6 | 0x80 // add parity bit to make count odd
         } else {
             bits_0_6

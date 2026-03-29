@@ -30,7 +30,10 @@ fn weight_json_output_is_valid_json_with_weight_key() {
         .clone();
     let s = String::from_utf8(output).unwrap();
     let v: serde_json::Value = serde_json::from_str(s.trim()).expect("valid JSON");
-    assert!(v.get("Weight").is_some(), "JSON should have 'Weight' key, got: {s}");
+    assert!(
+        v.get("Weight").is_some(),
+        "JSON should have 'Weight' key, got: {s}"
+    );
 }
 
 #[test]
@@ -100,8 +103,5 @@ fn weight_subcommand_help_exits_zero() {
 
 #[test]
 fn systemd_flag_is_accepted() {
-    mock_cmd()
-        .args(["--systemd", "weight"])
-        .assert()
-        .success();
+    mock_cmd().args(["--systemd", "weight"]).assert().success();
 }

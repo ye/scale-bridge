@@ -47,10 +47,10 @@ pub enum WeightUnit {
 impl WeightUnit {
     pub fn as_str(&self) -> &'static str {
         match self {
-            WeightUnit::Lb  => "lb",
-            WeightUnit::Kg  => "kg",
-            WeightUnit::Oz  => "oz",
-            WeightUnit::G   => "g",
+            WeightUnit::Lb => "lb",
+            WeightUnit::Kg => "kg",
+            WeightUnit::Oz => "oz",
+            WeightUnit::G => "g",
             WeightUnit::LbOz => "lb oz",
         }
     }

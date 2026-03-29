@@ -1,6 +1,6 @@
+use crate::{transport::Transport, ScaleError};
 use std::io::{self, Read, Write};
 use std::time::Duration;
-use crate::{ScaleError, transport::Transport};
 
 pub struct SerialTransport {
     port: Box<dyn serialport::SerialPort>,

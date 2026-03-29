@@ -1,7 +1,7 @@
+use crate::args::Cli;
+use scale_bridge_core::{ScaleError, Transport};
 use std::io::{Read, Write};
 use std::time::Duration;
-use scale_bridge_core::{ScaleError, Transport};
-use crate::args::Cli;
 
 /// Type-erased transport wrapping any concrete transport implementation.
 pub enum AnyTransport {
@@ -16,7 +16,7 @@ impl Read for AnyTransport {
         match self {
             #[cfg(feature = "serial")]
             AnyTransport::Serial(t) => t.read(buf),
-            AnyTransport::Tcp(t)  => t.read(buf),
+            AnyTransport::Tcp(t) => t.read(buf),
             AnyTransport::Mock(t) => t.read(buf),
         }
     }
@@ -27,7 +27,7 @@ impl Write for AnyTransport {
         match self {
             #[cfg(feature = "serial")]
             AnyTransport::Serial(t) => t.write(buf),
-            AnyTransport::Tcp(t)  => t.write(buf),
+            AnyTransport::Tcp(t) => t.write(buf),
             AnyTransport::Mock(t) => t.write(buf),
         }
     }
@@ -35,7 +35,7 @@ impl Write for AnyTransport {
         match self {
             #[cfg(feature = "serial")]
             AnyTransport::Serial(t) => t.flush(),
-            AnyTransport::Tcp(t)  => t.flush(),
+            AnyTransport::Tcp(t) => t.flush(),
             AnyTransport::Mock(t) => t.flush(),
         }
     }
@@ -46,7 +46,7 @@ impl Transport for AnyTransport {
         match self {
             #[cfg(feature = "serial")]
             AnyTransport::Serial(t) => t.set_timeout(d),
-            AnyTransport::Tcp(t)  => t.set_timeout(d),
+            AnyTransport::Tcp(t) => t.set_timeout(d),
             AnyTransport::Mock(t) => t.set_timeout(d),
         }
     }
@@ -54,7 +54,7 @@ impl Transport for AnyTransport {
         match self {
             #[cfg(feature = "serial")]
             AnyTransport::Serial(t) => t.flush_output(),
-            AnyTransport::Tcp(t)  => t.flush_output(),
+            AnyTransport::Tcp(t) => t.flush_output(),
             AnyTransport::Mock(t) => t.flush_output(),
         }
     }
@@ -75,9 +75,10 @@ pub fn build_transport(cli: &Cli) -> Result<AnyTransport, ScaleError> {
     }
 
     if let Some(host) = &cli.host {
-        return Ok(AnyTransport::Tcp(
-            scale_bridge_core::TcpTransport::connect(host, cli.tcp_port)?,
-        ));
+        return Ok(AnyTransport::Tcp(scale_bridge_core::TcpTransport::connect(
+            host,
+            cli.tcp_port,
+        )?));
     }
 
     #[cfg(feature = "serial")]

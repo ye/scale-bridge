@@ -1,7 +1,7 @@
+use super::Transport;
+use crate::ScaleError;
 use std::io::{self, Cursor, Read, Write};
 use std::time::Duration;
-use crate::ScaleError;
-use super::Transport;
 
 pub struct MockTransport {
     reader: Cursor<Vec<u8>>,

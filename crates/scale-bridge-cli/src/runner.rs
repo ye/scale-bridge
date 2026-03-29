@@ -1,17 +1,19 @@
-use std::time::Duration;
-use scale_bridge_core::{Codec, EtxCodec, Protocol, Scale, ScaleError, Transport};
-use scale_bridge_scp01::{NciCommand, NciProtocol, NciResponse};
 use crate::args::{Commands, OutputFormat};
 use crate::output::print_response;
 use crate::transport_builder::AnyTransport;
+use scale_bridge_core::{Codec, EtxCodec, Protocol, Scale, ScaleError, Transport};
+use scale_bridge_scp01::{NciCommand, NciProtocol, NciResponse};
+use std::time::Duration;
 
 pub fn run(transport: AnyTransport, command: &Commands) -> Result<(), ScaleError> {
     let mut scale = Scale::new(transport, EtxCodec::new(), NciProtocol);
 
     match command {
-        Commands::Weight { watch, interval, output } => {
-            run_maybe_watch(&mut scale, NciCommand::Weight, output, *watch, *interval)
-        }
+        Commands::Weight {
+            watch,
+            interval,
+            output,
+        } => run_maybe_watch(&mut scale, NciCommand::Weight, output, *watch, *interval),
         Commands::Status { output } => {
             let resp = scale.send(NciCommand::Status)?;
             print_response(&resp, output)
@@ -31,9 +33,13 @@ pub fn run(transport: AnyTransport, command: &Commands) -> Result<(), ScaleError
             println!("OK");
             Ok(())
         }
-        Commands::HighResolution { output } => {
-            run_maybe_watch(&mut scale, NciCommand::HighResolution, output, false, Duration::ZERO)
-        }
+        Commands::HighResolution { output } => run_maybe_watch(
+            &mut scale,
+            NciCommand::HighResolution,
+            output,
+            false,
+            Duration::ZERO,
+        ),
         Commands::Metrology { output } => {
             let resp = scale.send(NciCommand::Metrology)?;
             print_response(&resp, output)

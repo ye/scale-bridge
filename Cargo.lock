@@ -1009,6 +1009,7 @@ version = "0.1.0"
 dependencies = [
  "proptest",
  "rust_decimal",
+ "rust_decimal_macros",
  "scale-bridge-core",
  "serde",
  "tracing",

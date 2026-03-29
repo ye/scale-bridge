@@ -1,7 +1,7 @@
+use crate::{transport::Transport, ScaleError};
 use std::io::{self, Read, Write};
 use std::net::TcpStream;
 use std::time::Duration;
-use crate::{ScaleError, transport::Transport};
 
 pub struct TcpTransport {
     stream: TcpStream,
@@ -9,8 +9,7 @@ pub struct TcpTransport {
 
 impl TcpTransport {
     pub fn connect(host: &str, port: u16) -> Result<Self, ScaleError> {
-        let stream = TcpStream::connect((host, port))
-            .map_err(ScaleError::Transport)?;
+        let stream = TcpStream::connect((host, port)).map_err(ScaleError::Transport)?;
         Ok(Self { stream })
     }
 }
@@ -32,8 +31,12 @@ impl Write for TcpTransport {
 
 impl Transport for TcpTransport {
     fn set_timeout(&mut self, timeout: Duration) -> Result<(), ScaleError> {
-        self.stream.set_read_timeout(Some(timeout)).map_err(ScaleError::Transport)?;
-        self.stream.set_write_timeout(Some(timeout)).map_err(ScaleError::Transport)
+        self.stream
+            .set_read_timeout(Some(timeout))
+            .map_err(ScaleError::Transport)?;
+        self.stream
+            .set_write_timeout(Some(timeout))
+            .map_err(ScaleError::Transport)
     }
     fn flush_output(&mut self) -> Result<(), ScaleError> {
         self.stream.flush().map_err(ScaleError::Transport)

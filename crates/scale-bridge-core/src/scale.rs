@@ -1,4 +1,3 @@
-use std::io::Read;
 use crate::{Codec, Protocol, ScaleError, Transport};
 
 pub struct Scale<T: Transport, C: Codec, P: Protocol> {
@@ -9,7 +8,11 @@ pub struct Scale<T: Transport, C: Codec, P: Protocol> {
 
 impl<T: Transport, C: Codec, P: Protocol> Scale<T, C, P> {
     pub fn new(transport: T, codec: C, protocol: P) -> Self {
-        Self { transport, codec, protocol }
+        Self {
+            transport,
+            codec,
+            protocol,
+        }
     }
 
     pub fn send(&mut self, cmd: P::Command) -> Result<P::Response, ScaleError> {
@@ -67,11 +70,7 @@ mod tests {
         fn encode_command(&self, cmd: &EchoCommand) -> Vec<u8> {
             vec![cmd.0]
         }
-        fn decode_response(
-            &self,
-            _cmd: &EchoCommand,
-            frame: &[u8],
-        ) -> Result<Vec<u8>, ScaleError> {
+        fn decode_response(&self, _cmd: &EchoCommand, frame: &[u8]) -> Result<Vec<u8>, ScaleError> {
             Ok(frame.to_vec())
         }
     }

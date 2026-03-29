@@ -3,8 +3,8 @@ mod output;
 mod runner;
 mod transport_builder;
 
-use clap::Parser;
 use args::Cli;
+use clap::Parser;
 use scale_bridge_core::ScaleError;
 use transport_builder::build_transport;
 

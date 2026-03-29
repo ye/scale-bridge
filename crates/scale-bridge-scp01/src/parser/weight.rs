@@ -1,10 +1,10 @@
-use rust_decimal::Decimal;
-use std::str::FromStr;
-use scale_bridge_core::ScaleError;
+use super::status::{extract_status_bytes, parse_status_bytes};
 use crate::command::NciCommand;
 use crate::response::NciResponse;
 use crate::types::*;
-use super::status::{extract_status_bytes, parse_status_bytes};
+use rust_decimal::Decimal;
+use scale_bridge_core::ScaleError;
+use std::str::FromStr;
 
 pub fn parse_weight(cmd: &NciCommand, frame: &[u8]) -> Result<NciResponse, ScaleError> {
     let (data_bytes, status_bytes) = extract_status_bytes(frame)?;
@@ -47,15 +47,15 @@ pub fn parse_weight(cmd: &NciCommand, frame: &[u8]) -> Result<NciResponse, Scale
         ("lb", WeightUnit::Lb),
         ("kg", WeightUnit::Kg),
         ("oz", WeightUnit::Oz),
-        ("g",  WeightUnit::G),
+        ("g", WeightUnit::G),
     ];
 
     let mut value_str = data;
     let mut unit = WeightUnit::Lb;
 
     for (suffix, u) in unit_suffixes {
-        if data.ends_with(suffix) {
-            value_str = data[..data.len() - suffix.len()].trim();
+        if let Some(stripped) = data.strip_suffix(suffix) {
+            value_str = stripped.trim();
             unit = u.clone();
             break;
         }
@@ -88,9 +88,9 @@ pub fn parse_metrology(frame: &[u8]) -> Result<NciResponse, ScaleError> {
     let s = std::str::from_utf8(&data_bytes)
         .map_err(|e| ScaleError::ParseError(e.to_string()))?
         .trim();
-    let raw_counts: u32 = s.parse().map_err(|e| {
-        ScaleError::ParseError(format!("bad metrology counts '{s}': {e}"))
-    })?;
+    let raw_counts: u32 = s
+        .parse()
+        .map_err(|e| ScaleError::ParseError(format!("bad metrology counts '{s}': {e}")))?;
     Ok(NciResponse::Metrology(MetrologyReading { raw_counts }))
 }
 
@@ -102,8 +102,7 @@ pub fn parse_about(frame: &[u8]) -> Result<NciResponse, ScaleError> {
         .take_while(|&&b| b != 0x0D && b != 0x03)
         .cloned()
         .collect();
-    let s = std::str::from_utf8(&inner)
-        .map_err(|e| ScaleError::ParseError(e.to_string()))?;
+    let s = std::str::from_utf8(&inner).map_err(|e| ScaleError::ParseError(e.to_string()))?;
     let parts: Vec<&str> = s.splitn(4, ',').collect();
     if parts.len() < 3 {
         return Err(ScaleError::ParseError(format!(
@@ -111,9 +110,9 @@ pub fn parse_about(frame: &[u8]) -> Result<NciResponse, ScaleError> {
         )));
     }
     Ok(NciResponse::About(AboutInfo {
-        model:            parts[0].trim().to_string(),
-        version:          parts[1].trim().to_string(),
-        capacity:         parts[2].trim().to_string(),
+        model: parts[0].trim().to_string(),
+        version: parts[1].trim().to_string(),
+        capacity: parts[2].trim().to_string(),
         load_cell_serial: parts.get(3).map(|s| s.trim().to_string()),
     }))
 }
@@ -126,8 +125,7 @@ pub fn parse_diagnostic(frame: &[u8]) -> Result<NciResponse, ScaleError> {
         .take_while(|&&b| b != 0x0D && b != 0x03)
         .cloned()
         .collect();
-    let s = std::str::from_utf8(&inner)
-        .map_err(|e| ScaleError::ParseError(e.to_string()))?;
+    let s = std::str::from_utf8(&inner).map_err(|e| ScaleError::ParseError(e.to_string()))?;
     let p: Vec<&str> = s.splitn(8, ',').collect();
     if p.len() < 8 {
         return Err(ScaleError::ParseError(format!(
@@ -137,25 +135,24 @@ pub fn parse_diagnostic(frame: &[u8]) -> Result<NciResponse, ScaleError> {
     }
 
     let parse_u32 = |v: &str| -> Result<u32, ScaleError> {
-        v.trim().parse().map_err(|e| {
-            ScaleError::ParseError(format!("bad u32 '{v}': {e}"))
-        })
+        v.trim()
+            .parse()
+            .map_err(|e| ScaleError::ParseError(format!("bad u32 '{v}': {e}")))
     };
     let parse_dec = |v: &str| -> Result<Decimal, ScaleError> {
-        Decimal::from_str(v.trim()).map_err(|e| {
-            ScaleError::ParseError(format!("bad decimal '{v}': {e}"))
-        })
+        Decimal::from_str(v.trim())
+            .map_err(|e| ScaleError::ParseError(format!("bad decimal '{v}': {e}")))
     };
 
     Ok(NciResponse::Diagnostic(DiagnosticInfo {
-        power_on_starts:     parse_u32(p[0])?,
-        calibrations:        parse_u32(p[1])?,
+        power_on_starts: parse_u32(p[0])?,
+        calibrations: parse_u32(p[1])?,
         overcapacity_events: parse_u32(p[2])?,
-        normalized_counts:   parse_u32(p[3])?,
-        span_counts:         parse_u32(p[4])?,
-        zero_counts:         parse_u32(p[5])?,
-        cal_gravity:         parse_dec(p[6])?,
-        span_weight:         p[7].trim().to_string(),
+        normalized_counts: parse_u32(p[3])?,
+        span_counts: parse_u32(p[4])?,
+        zero_counts: parse_u32(p[5])?,
+        cal_gravity: parse_dec(p[6])?,
+        span_weight: p[7].trim().to_string(),
     }))
 }
 

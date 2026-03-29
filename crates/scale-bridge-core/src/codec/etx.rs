@@ -10,7 +10,9 @@ pub struct EtxCodec {
 
 impl EtxCodec {
     pub fn new() -> Self {
-        Self { internal: Vec::new() }
+        Self {
+            internal: Vec::new(),
+        }
     }
 }
 

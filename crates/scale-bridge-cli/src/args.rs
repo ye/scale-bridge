@@ -2,7 +2,10 @@ use clap::{Parser, Subcommand, ValueEnum};
 use std::time::Duration;
 
 #[derive(Parser, Debug)]
-#[command(name = "scale-bridge", about = "Avery WeighTronix scale CLI — SCP-01/NCI protocol")]
+#[command(
+    name = "scale-bridge",
+    about = "Avery WeighTronix scale CLI — SCP-01/NCI protocol"
+)]
 pub struct Cli {
     /// Serial port path (e.g. /dev/ttyUSB0 or COM3)
     #[arg(long, conflicts_with = "host")]

@@ -1,6 +1,6 @@
-use scale_bridge_core::{Command, Protocol, ScaleError};
 use crate::command::NciCommand;
 use crate::response::NciResponse;
+use scale_bridge_core::{Command, Protocol, ScaleError};
 
 pub struct NciProtocol;
 

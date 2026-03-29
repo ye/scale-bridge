@@ -13,12 +13,12 @@ pub enum ScaleError {
 impl fmt::Display for ScaleError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ScaleError::Transport(e)      => write!(f, "transport error: {e}"),
-            ScaleError::Timeout           => write!(f, "scale communication timeout"),
+            ScaleError::Transport(e) => write!(f, "transport error: {e}"),
+            ScaleError::Timeout => write!(f, "scale communication timeout"),
             ScaleError::FramingError(msg) => write!(f, "framing error: {msg}"),
-            ScaleError::ParseError(msg)   => write!(f, "parse error: {msg}"),
+            ScaleError::ParseError(msg) => write!(f, "parse error: {msg}"),
             ScaleError::UnrecognizedCommand => write!(f, "scale did not recognize command"),
-            ScaleError::SerialPort(msg)   => write!(f, "serial port error: {msg}"),
+            ScaleError::SerialPort(msg) => write!(f, "serial port error: {msg}"),
         }
     }
 }
@@ -63,9 +63,17 @@ mod tests {
     #[test]
     fn display_formats_all_variants() {
         assert!(ScaleError::Timeout.to_string().contains("timeout"));
-        assert!(ScaleError::UnrecognizedCommand.to_string().contains("recognize"));
-        assert!(ScaleError::FramingError("bad".into()).to_string().contains("bad"));
-        assert!(ScaleError::ParseError("oops".into()).to_string().contains("oops"));
-        assert!(ScaleError::SerialPort("port gone".into()).to_string().contains("port gone"));
+        assert!(ScaleError::UnrecognizedCommand
+            .to_string()
+            .contains("recognize"));
+        assert!(ScaleError::FramingError("bad".into())
+            .to_string()
+            .contains("bad"));
+        assert!(ScaleError::ParseError("oops".into())
+            .to_string()
+            .contains("oops"));
+        assert!(ScaleError::SerialPort("port gone".into())
+            .to_string()
+            .contains("port gone"));
     }
 }

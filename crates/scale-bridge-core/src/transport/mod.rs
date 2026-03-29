@@ -1,6 +1,6 @@
+use crate::ScaleError;
 use std::io::{Read, Write};
 use std::time::Duration;
-use crate::ScaleError;
 
 pub trait Transport: Read + Write {
     fn set_timeout(&mut self, timeout: Duration) -> Result<(), ScaleError>;

@@ -1,5 +1,5 @@
-use serde::Serialize;
 use crate::types::*;
+use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum NciResponse {
