@@ -31,31 +31,31 @@ use std::time::Duration;
 )]
 pub struct Cli {
     /// Serial port path (e.g. /dev/ttyUSB0 or COM3)
-    #[arg(long = "serial-port", alias = "port", conflicts_with = "host")]
+    #[arg(long = "serial-port", alias = "port", conflicts_with = "host", global = true)]
     pub serial_port: Option<String>,
 
     /// Baud rate for serial connection
-    #[arg(long, default_value = "9600")]
+    #[arg(long, default_value = "9600", global = true)]
     pub baud: u32,
 
     /// Serial parity
-    #[arg(long, default_value = "even")]
+    #[arg(long, default_value = "even", global = true)]
     pub parity: SerialParity,
 
     /// TCP hostname of the scale for Ethernet-connected devices
-    #[arg(long, conflicts_with = "serial_port")]
+    #[arg(long, conflicts_with = "serial_port", global = true)]
     pub host: Option<String>,
 
     /// TCP port number of the scale for Ethernet-connected devices
-    #[arg(long = "tcp-port", default_value = "3001")]
+    #[arg(long = "tcp-port", default_value = "3001", global = true)]
     pub tcp_port: u16,
 
     /// Suppress timestamps and ANSI color (for systemd/journald)
-    #[arg(long)]
+    #[arg(long, global = true)]
     pub systemd: bool,
 
     /// Verbosity level: 0=quiet, 1=debug wire logs, 2=trace
-    #[arg(long, default_value_t = 0)]
+    #[arg(long, default_value_t = 0, global = true)]
     pub verbose: u8,
 
     #[command(subcommand)]
@@ -110,7 +110,7 @@ pub enum Commands {
     #[command(
         long_about = "Start the HTTPS REST server.\n\n\
             The HTTPS listener is controlled by --https-port and --bind.\n\
-            The scale connection is separate: use --serial-port for a local serial device, or --host/--tcp-port for an Ethernet-connected scale.\n\n\
+            The scale connection is separate: use the top-level --serial-port for a local serial device, or --host/--tcp-port for an Ethernet-connected scale.\n\n\
             Example:\n  \
             scale-bridge --serial-port /dev/ttyUSB0 serve --https-port 443 --bind 127.0.0.1 --cert cert.pem --key key.pem"
     )]
@@ -122,9 +122,6 @@ pub enum Commands {
         /// Bind host or IP address for the HTTPS listener
         #[arg(long, default_value = "127.0.0.1")]
         bind: String,
-        /// Serial port for scale connection
-        #[arg(long)]
-        scale_port: Option<String>,
         /// TLS certificate file
         #[arg(long)]
         cert: Option<String>,

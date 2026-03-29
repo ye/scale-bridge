@@ -28,7 +28,6 @@ fn main() {
     if let Commands::Serve {
         https_port,
         bind,
-        scale_port,
         cert,
         key,
     } = &cli.command
@@ -36,7 +35,7 @@ fn main() {
         let config = scale_bridge_server::ServerConfig {
             https_port: *https_port,
             bind_addr: bind.clone(),
-            scale_serial_port: scale_port.clone().or_else(|| cli.serial_port.clone()),
+            scale_serial_port: cli.serial_port.clone(),
             scale_host: cli.host.clone(),
             scale_tcp_port: cli.tcp_port,
             cert_path: cert.clone(),

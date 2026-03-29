@@ -123,6 +123,15 @@ fn legacy_port_alias_is_accepted() {
 }
 
 #[test]
+fn global_serial_port_flag_is_accepted_after_subcommand() {
+    mock_cmd()
+        .args(["weight", "--serial-port", "/dev/ttyUSB0"])
+        .assert()
+        .success()
+        .stdout(predicate::str::contains("1234.56"));
+}
+
+#[test]
 fn verbose_level_emits_raw_frame_logs() {
     mock_cmd()
         .args(["--verbose", "1", "weight"])
