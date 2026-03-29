@@ -8,10 +8,15 @@ use std::time::Duration;
     about = "Avery WeighTronix scale CLI — SCP-01/NCI protocol",
     long_about = "scale-bridge communicates with Avery WeighTronix digital bench scales\n\
         over serial (RS-232/USB) or Ethernet using the SCP-01/NCI protocol.\n\n\
+        Observed on tested NCI 6720-15 hardware:\n  \
+        Serial parity defaults to even.\n  \
+        Status replies may be standalone ASCII frames like S00.\n  \
+        Weight units may be uppercase (for example LB).\n  \
+        Unsupported commands may reply with framed '?'.\n\n\
         One-shot mode: query the scale once and exit.\n\
         Watch mode (--watch): stream readings until Ctrl-C.\n\n\
         Connection:\n  \
-        Serial:   --port /dev/ttyUSB0 --baud 9600\n  \
+        Serial:   --port /dev/ttyUSB0 --baud 9600 --parity even\n  \
         Ethernet: --host 192.168.1.50 --tcp-port 3001\n\n\
         Set SCALE_BRIDGE_MOCK=1 to use built-in mock transport for testing."
 )]
@@ -24,6 +29,10 @@ pub struct Cli {
     #[arg(long, default_value = "9600")]
     pub baud: u32,
 
+    /// Serial parity
+    #[arg(long, default_value = "even")]
+    pub parity: SerialParity,
+
     /// TCP hostname for scales with built-in Ethernet
     #[arg(long, conflicts_with = "port")]
     pub host: Option<String>,
@@ -35,6 +44,10 @@ pub struct Cli {
     /// Suppress timestamps and ANSI color (for systemd/journald)
     #[arg(long)]
     pub systemd: bool,
+
+    /// Verbosity level: 0=quiet, 1=debug wire logs, 2=trace
+    #[arg(long, default_value_t = 0)]
+    pub verbose: u8,
 
     #[command(subcommand)]
     pub command: Commands,
@@ -107,6 +120,13 @@ pub enum OutputFormat {
     Text,
     Json,
     Csv,
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum SerialParity {
+    None,
+    Odd,
+    Even,
 }
 
 fn parse_duration(s: &str) -> Result<Duration, String> {

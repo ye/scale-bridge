@@ -1,7 +1,16 @@
-use crate::args::Cli;
+use crate::args::{Cli, SerialParity};
 use scale_bridge_core::{ScaleError, Transport};
 use std::io::{Read, Write};
 use std::time::Duration;
+
+#[cfg(feature = "serial")]
+fn to_serialport_parity(parity: &SerialParity) -> serialport::Parity {
+    match parity {
+        SerialParity::None => serialport::Parity::None,
+        SerialParity::Odd => serialport::Parity::Odd,
+        SerialParity::Even => serialport::Parity::Even,
+    }
+}
 
 /// Type-erased transport wrapping any concrete transport implementation.
 pub enum AnyTransport {
@@ -83,9 +92,11 @@ pub fn build_transport(cli: &Cli) -> Result<AnyTransport, ScaleError> {
 
     #[cfg(feature = "serial")]
     if let Some(port) = &cli.port {
-        return Ok(AnyTransport::Serial(
-            scale_bridge_core::SerialTransport::open(port, cli.baud)?,
-        ));
+        return Ok(AnyTransport::Serial(scale_bridge_core::SerialTransport::open(
+            port,
+            cli.baud,
+            to_serialport_parity(&cli.parity),
+        )?));
     }
 
     Err(ScaleError::Transport(std::io::Error::new(

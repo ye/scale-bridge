@@ -1,6 +1,40 @@
 use crate::types::{ScaleStatus, WeightRange};
 use scale_bridge_core::ScaleError;
 
+fn parse_ascii_status(s: &str) -> Result<ScaleStatus, ScaleError> {
+    let trimmed = s.trim();
+    if trimmed.len() < 2 {
+        return Err(ScaleError::ParseError(format!(
+            "ASCII status too short: '{trimmed}'"
+        )));
+    }
+
+    let leader = trimmed.as_bytes()[0].to_ascii_uppercase();
+    let motion = match leader {
+        b'S' => false,
+        b'M' => true,
+        _ => {
+            return Err(ScaleError::ParseError(format!(
+                "unknown ASCII status leader: '{trimmed}'"
+            )))
+        }
+    };
+
+    Ok(ScaleStatus {
+        motion,
+        at_zero: false,
+        under_capacity: false,
+        over_capacity: false,
+        ram_error: false,
+        rom_error: false,
+        eeprom_error: false,
+        faulty_calibration: false,
+        net_weight: false,
+        initial_zero_error: false,
+        range: WeightRange::Low,
+    })
+}
+
 /// Parse the raw status byte slice extracted from an NCI response.
 ///
 /// Status byte layout (LSB = bit 0):
@@ -12,6 +46,17 @@ use scale_bridge_core::ScaleError;
 /// Byte 3: b0=range_LSB, b1=net_weight, b2=init_zero_err, b3=reserved,
 ///         b4=always1, b5=always1, b6=byte4_follows, b7=parity
 pub fn parse_status_bytes(bytes: &[u8]) -> Result<ScaleStatus, ScaleError> {
+    if bytes.iter().all(u8::is_ascii) {
+        let ascii = std::str::from_utf8(bytes)
+            .map_err(|e| ScaleError::ParseError(format!("non-UTF8 ASCII status bytes: {e}")))?;
+        if ascii
+            .chars()
+            .all(|ch| ch.is_ascii_alphanumeric() || ch.is_ascii_whitespace())
+        {
+            return parse_ascii_status(ascii);
+        }
+    }
+
     if bytes.len() < 2 {
         return Err(ScaleError::ParseError(format!(
             "expected at least 2 status bytes, got {}",
@@ -109,6 +154,17 @@ pub fn extract_status_bytes(frame: &[u8]) -> Result<(Vec<u8>, Vec<u8>), ScaleErr
 
 /// Parse a [`ScaleStatus`] from a complete NCI response frame.
 pub fn parse_status_only(frame: &[u8]) -> Result<ScaleStatus, ScaleError> {
+    if frame.first() == Some(&0x0A) && frame.iter().filter(|&&b| b == 0x0A).count() == 1 {
+        let end = frame[1..]
+            .iter()
+            .position(|&b| b == 0x0D)
+            .map(|p| p + 1)
+            .ok_or_else(|| {
+                ScaleError::ParseError("no CR after standalone status bytes".into())
+            })?;
+        return parse_status_bytes(&frame[1..end]);
+    }
+
     let (_, status_bytes) = extract_status_bytes(frame)?;
     parse_status_bytes(&status_bytes)
 }
@@ -260,5 +316,26 @@ mod tests {
         let (data, status) = extract_status_bytes(&frame).unwrap();
         assert_eq!(data, b"  1234.56lb");
         assert_eq!(status, vec![b1, b2]);
+    }
+
+    #[test]
+    fn parses_ascii_stable_status() {
+        let status = parse_status_bytes(b"S00").unwrap();
+        assert!(!status.motion);
+        assert!(!status.has_error());
+    }
+
+    #[test]
+    fn parses_ascii_motion_status() {
+        let status = parse_status_bytes(b"M00").unwrap();
+        assert!(status.motion);
+        assert!(!status.has_error());
+    }
+
+    #[test]
+    fn parses_standalone_ascii_status_frame() {
+        let status = parse_status_only(b"\x0aS00\x0d\x03").unwrap();
+        assert!(!status.motion);
+        assert!(!status.has_error());
     }
 }

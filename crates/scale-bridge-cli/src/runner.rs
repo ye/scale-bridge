@@ -19,19 +19,16 @@ pub fn run(transport: AnyTransport, command: &Commands) -> Result<(), ScaleError
             print_response(&resp, output)
         }
         Commands::Zero => {
-            scale.send(NciCommand::Zero)?;
-            println!("OK");
-            Ok(())
+            let resp = scale.send(NciCommand::Zero)?;
+            print_response(&resp, &OutputFormat::Text)
         }
         Commands::Tare => {
-            scale.send(NciCommand::Tare)?;
-            println!("OK");
-            Ok(())
+            let resp = scale.send(NciCommand::Tare)?;
+            print_response(&resp, &OutputFormat::Text)
         }
         Commands::Units => {
-            scale.send(NciCommand::Units)?;
-            println!("OK");
-            Ok(())
+            let resp = scale.send(NciCommand::Units)?;
+            print_response(&resp, &OutputFormat::Text)
         }
         Commands::HighResolution { output } => run_maybe_watch(
             &mut scale,

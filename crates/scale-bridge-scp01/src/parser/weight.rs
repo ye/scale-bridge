@@ -13,6 +13,7 @@ pub fn parse_weight(cmd: &NciCommand, frame: &[u8]) -> Result<NciResponse, Scale
     let raw = std::str::from_utf8(&data_bytes)
         .map_err(|e| ScaleError::ParseError(format!("non-UTF8 data bytes: {e}")))?;
     let data = raw.trim();
+    let data_lower = data.to_ascii_lowercase();
 
     let display = if data.starts_with('^') {
         DisplayState::OverCapacity
@@ -25,8 +26,8 @@ pub fn parse_weight(cmd: &NciCommand, frame: &[u8]) -> Result<NciResponse, Scale
     };
 
     // Pounds-ounces format: contains both "lb" and "oz"
-    if data.contains("lb") && data.contains("oz") {
-        let lb_str = data.split("lb").next().unwrap_or("0").trim();
+    if data_lower.contains("lb") && data_lower.contains("oz") {
+        let lb_str = data_lower.split("lb").next().unwrap_or("0").trim();
         let value = Decimal::from_str(lb_str).unwrap_or(Decimal::ZERO);
         let reading = WeightReading {
             value,
@@ -54,7 +55,7 @@ pub fn parse_weight(cmd: &NciCommand, frame: &[u8]) -> Result<NciResponse, Scale
     let mut unit = WeightUnit::Lb;
 
     for (suffix, u) in unit_suffixes {
-        if let Some(stripped) = data.strip_suffix(suffix) {
+        if let Some(stripped) = data_lower.strip_suffix(suffix) {
             value_str = stripped.trim();
             unit = u.clone();
             break;
@@ -203,6 +204,19 @@ mod tests {
         if let NciResponse::Weight(w) = resp {
             assert_eq!(w.value, dec!(0.567));
             assert_eq!(w.unit, WeightUnit::Kg);
+        } else {
+            panic!("{resp:?}");
+        }
+    }
+
+    #[test]
+    fn parses_uppercase_lb_weight_with_ascii_status() {
+        let frame = b"\x0a001.35LB\x0d\x0aS00\x0d\x03".to_vec();
+        let resp = parse_weight(&NciCommand::Weight, &frame).unwrap();
+        if let NciResponse::Weight(w) = resp {
+            assert_eq!(w.value, dec!(1.35));
+            assert_eq!(w.unit, WeightUnit::Lb);
+            assert!(!w.status.motion);
         } else {
             panic!("{resp:?}");
         }

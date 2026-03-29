@@ -11,6 +11,6 @@ pub enum NciResponse {
     Metrology(MetrologyReading),
     About(AboutInfo),
     Diagnostic(DiagnosticInfo),
-    /// Scale replied '?' — command not recognized
+    /// Scale replied with framed '?' response — command not recognized
     UnrecognizedCommand,
 }

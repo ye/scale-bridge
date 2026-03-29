@@ -1,5 +1,13 @@
 use crate::{Codec, Protocol, ScaleError, Transport};
 
+fn format_frame(bytes: &[u8]) -> String {
+    bytes
+        .iter()
+        .map(|b| format!("{b:02X}"))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 pub struct Scale<T: Transport, C: Codec, P: Protocol> {
     pub transport: T,
     codec: C,
@@ -18,10 +26,12 @@ impl<T: Transport, C: Codec, P: Protocol> Scale<T, C, P> {
     pub fn send(&mut self, cmd: P::Command) -> Result<P::Response, ScaleError> {
         let bytes = self.protocol.encode_command(&cmd);
         let frame_out = self.codec.encode(&bytes);
+        tracing::debug!("tx: {}", format_frame(&frame_out));
         std::io::Write::write_all(&mut self.transport, &frame_out)?;
         self.transport.flush_output()?;
 
         let frame_in = self.read_frame()?;
+        tracing::debug!("rx: {}", format_frame(&frame_in));
         self.protocol.decode_response(&cmd, &frame_in)
     }
 

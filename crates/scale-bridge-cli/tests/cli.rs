@@ -105,3 +105,21 @@ fn weight_subcommand_help_exits_zero() {
 fn systemd_flag_is_accepted() {
     mock_cmd().args(["--systemd", "weight"]).assert().success();
 }
+
+#[test]
+fn parity_flag_is_accepted() {
+    mock_cmd()
+        .args(["--parity", "odd", "weight"])
+        .assert()
+        .success();
+}
+
+#[test]
+fn verbose_level_emits_raw_frame_logs() {
+    mock_cmd()
+        .args(["--verbose", "1", "weight"])
+        .assert()
+        .success()
+        .stderr(predicate::str::contains("tx: 57 0D"))
+        .stderr(predicate::str::contains("rx: 0A 20 20 31 32 33 34 2E 35 36 6C 62 0D 0A B0 B0 0D 03"));
+}

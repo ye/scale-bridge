@@ -4,11 +4,11 @@
 
 # Run all tests across the workspace
 test:
-    cargo nextest run --workspace
+    if cargo nextest --version >/dev/null 2>&1; then cargo nextest run --workspace; else cargo test --workspace; fi
 
 # Run tests for a specific crate (e.g. just test-crate scale-bridge-scp01)
 test-crate crate:
-    cargo nextest run -p {{crate}}
+    if cargo nextest --version >/dev/null 2>&1; then cargo nextest run -p {{crate}}; else cargo test -p {{crate}}; fi
 
 # Lint with clippy — deny all warnings
 lint:
@@ -47,7 +47,7 @@ size: release
 
 # Run fuzz tests only
 fuzz:
-    cargo nextest run -p scale-bridge-scp01 --test fuzz
+    if cargo nextest --version >/dev/null 2>&1; then cargo nextest run -p scale-bridge-scp01 --test fuzz; else cargo test -p scale-bridge-scp01 --test fuzz; fi
 
 # Generate man page and shell completions into target/generated/
 generate: release

@@ -7,10 +7,14 @@ pub struct SerialTransport {
 }
 
 impl SerialTransport {
-    pub fn open(port_name: &str, baud_rate: u32) -> Result<Self, ScaleError> {
+    pub fn open(
+        port_name: &str,
+        baud_rate: u32,
+        parity: serialport::Parity,
+    ) -> Result<Self, ScaleError> {
         let port = serialport::new(port_name, baud_rate)
             .data_bits(serialport::DataBits::Seven)
-            .parity(serialport::Parity::None)
+            .parity(parity)
             .stop_bits(serialport::StopBits::One)
             .timeout(Duration::from_secs(2))
             .open()

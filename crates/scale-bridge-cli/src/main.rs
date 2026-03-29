@@ -10,10 +10,17 @@ use transport_builder::build_transport;
 
 fn main() {
     let cli = Cli::parse();
+    let max_level = match cli.verbose {
+        0 => tracing::Level::INFO,
+        1 => tracing::Level::DEBUG,
+        _ => tracing::Level::TRACE,
+    };
 
     let subscriber = tracing_subscriber::fmt()
         .with_ansi(!cli.systemd)
         .with_target(false)
+        .with_max_level(max_level)
+        .with_writer(std::io::stderr)
         .finish();
     tracing::subscriber::set_global_default(subscriber).ok();
 
