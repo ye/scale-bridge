@@ -100,11 +100,14 @@ pub enum Commands {
         #[arg(long, short, default_value = "text")]
         output: OutputFormat,
     },
-    /// Start HTTPS REST server (not yet implemented)
+    /// Start HTTPS REST server
     Serve {
         /// HTTPS port
-        #[arg(long, default_value = "8443")]
-        port: u16,
+        #[arg(long = "https-port", default_value = "443")]
+        https_port: u16,
+        /// Bind host or IP address for the HTTPS listener
+        #[arg(long, default_value = "127.0.0.1")]
+        bind: String,
         /// Serial port for scale connection
         #[arg(long)]
         scale_port: Option<String>,

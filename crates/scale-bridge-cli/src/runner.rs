@@ -56,11 +56,7 @@ pub fn run(transport: AnyTransport, command: &Commands) -> Result<(), ScaleError
             let resp = scale.send(NciCommand::Diagnostic)?;
             print_response(&resp, output)
         }
-        Commands::Serve { port, .. } => {
-            eprintln!("Server mode not yet implemented (would listen on port {port})");
-            eprintln!("See crates/scale-bridge-server/src/lib.rs for planned API.");
-            Ok(())
-        }
+        Commands::Serve { .. } => unreachable!("serve is handled in main before transport setup"),
     }
 }
 

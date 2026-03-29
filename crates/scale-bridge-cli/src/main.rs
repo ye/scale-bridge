@@ -5,6 +5,7 @@ mod transport_builder;
 
 use args::Cli;
 use clap::Parser;
+use crate::args::Commands;
 use scale_bridge_core::ScaleError;
 use transport_builder::build_transport;
 
@@ -23,6 +24,31 @@ fn main() {
         .with_writer(std::io::stderr)
         .finish();
     tracing::subscriber::set_global_default(subscriber).ok();
+
+    if let Commands::Serve {
+        https_port,
+        bind,
+        scale_port,
+        cert,
+        key,
+    } = &cli.command
+    {
+        let config = scale_bridge_server::ServerConfig {
+            https_port: *https_port,
+            bind_addr: bind.clone(),
+            scale_serial_port: scale_port.clone().or_else(|| cli.serial_port.clone()),
+            scale_host: cli.host.clone(),
+            scale_tcp_port: cli.tcp_port,
+            cert_path: cert.clone(),
+            key_path: key.clone(),
+        };
+
+        if let Err(e) = scale_bridge_server::serve(config) {
+            eprintln!("error: {e}");
+            std::process::exit(2);
+        }
+        return;
+    }
 
     let transport = match build_transport(&cli) {
         Ok(t) => t,

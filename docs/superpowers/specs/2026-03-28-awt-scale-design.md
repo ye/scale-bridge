@@ -210,7 +210,7 @@ scale-bridge --serial-port /dev/ttyUSB0 weight --output json
 scale-bridge --serial-port /dev/ttyUSB0 weight --output csv
 
 # Server (stubbed)
-scale-bridge serve --port 8443 --scale-port /dev/ttyUSB0 --cert cert.pem --key key.pem
+scale-bridge serve --https-port 8443 --bind 127.0.0.1 --scale-port /dev/ttyUSB0 --cert cert.pem --key key.pem
 ```
 
 **Exit codes:** 0=success, 1=scale error, 2=transport error, 3=parse error
