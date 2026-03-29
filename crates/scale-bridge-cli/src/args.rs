@@ -5,8 +5,9 @@ use std::time::Duration;
 #[command(
     name = "scale-bridge",
     version,
-    about = "Avery WeighTronix scale CLI — SCP-01/NCI protocol",
-    long_about = "scale-bridge communicates with Avery WeighTronix digital bench scales\n\
+    author = "Ye Wang <ye@users.noreply.github.com>",
+    about = "Avery Weigh-Tronix / NCI / Brecknell scale CLI — SCP-01/NCI protocol",
+    long_about = "scale-bridge communicates with Avery Weigh-Tronix digital bench scales\n\
         over serial (RS-232/USB) or Ethernet using the SCP-01/NCI protocol.\n\n\
         Observed on tested NCI 6720-15 hardware:\n  \
         Serial parity defaults to even.\n  \
@@ -16,14 +17,15 @@ use std::time::Duration;
         One-shot mode: query the scale once and exit.\n\
         Watch mode (--watch): stream readings until Ctrl-C.\n\n\
         Connection:\n  \
-        Serial:   --port /dev/ttyUSB0 --baud 9600 --parity even\n  \
+        Serial:   --serial-port /dev/ttyUSB0 --baud 9600 --parity even\n  \
         Ethernet: --host 192.168.1.50 --tcp-port 3001\n\n\
-        Set SCALE_BRIDGE_MOCK=1 to use built-in mock transport for testing."
+        Set SCALE_BRIDGE_MOCK=1 to use built-in mock transport for testing.",
+    after_help = "Author:\n  Ye Wang <ye@users.noreply.github.com>"
 )]
 pub struct Cli {
     /// Serial port path (e.g. /dev/ttyUSB0 or COM3)
-    #[arg(long, conflicts_with = "host")]
-    pub port: Option<String>,
+    #[arg(long = "serial-port", alias = "port", conflicts_with = "host")]
+    pub serial_port: Option<String>,
 
     /// Baud rate for serial connection
     #[arg(long, default_value = "9600")]
@@ -34,7 +36,7 @@ pub struct Cli {
     pub parity: SerialParity,
 
     /// TCP hostname for scales with built-in Ethernet
-    #[arg(long, conflicts_with = "port")]
+    #[arg(long, conflicts_with = "serial_port")]
     pub host: Option<String>,
 
     /// TCP port number

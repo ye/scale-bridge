@@ -1818,7 +1818,7 @@ use std::time::Duration;
 pub struct Cli {
     /// Serial port (e.g. /dev/ttyUSB0 or COM3)
     #[arg(long, conflicts_with = "host")]
-    pub port: Option<String>,
+    pub serial_port: Option<String>,
 
     /// Baud rate for serial connection
     #[arg(long, default_value = "9600")]
@@ -2004,7 +2004,7 @@ pub fn build_transport(cli: &Cli) -> Result<AnyTransport, ScaleError> {
     }
 
     #[cfg(feature = "serial")]
-    if let Some(port) = &cli.port {
+    if let Some(port) = &cli.serial_port {
         return Ok(AnyTransport::Serial(
             scale_bridge_core::SerialTransport::open(port, cli.baud)?
         ));
@@ -2487,7 +2487,7 @@ Documentation=https://github.com/yourusername/scale-bridge
 
 [Service]
 Type=simple
-ExecStart=/usr/local/bin/scale-bridge --systemd --port /dev/ttyUSB0 weight --watch
+ExecStart=/usr/local/bin/scale-bridge --systemd --serial-port /dev/ttyUSB0 weight --watch
 Restart=on-failure
 RestartSec=5s
 StandardOutput=journal

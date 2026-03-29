@@ -47,7 +47,7 @@ Unsupported commands were observed returning the framed `?` response on the wire
 Typical invocation for the tested unit:
 
 ```bash
-./target/debug/scale-bridge --port /dev/ttyUSB0 --baud 9600 weight
+./target/debug/scale-bridge --serial-port /dev/ttyUSB0 --baud 9600 weight
 ```
 
 The default serial settings used by the CLI are:
@@ -62,7 +62,7 @@ The default serial settings used by the CLI are:
 Enable wire logging with `--verbose 1` or higher:
 
 ```bash
-./target/debug/scale-bridge --port /dev/ttyUSB0 --verbose 1 weight
+./target/debug/scale-bridge --serial-port /dev/ttyUSB0 --verbose 1 weight
 ```
 
 Example observed traffic on the tested unit:

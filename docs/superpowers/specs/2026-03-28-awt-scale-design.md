@@ -188,26 +188,26 @@ pub enum ScaleError {
 
 ```bash
 # One-shot serial
-scale-bridge --port /dev/ttyUSB0 --baud 9600 weight
-scale-bridge --port COM3 status
-scale-bridge --port /dev/ttyUSB0 zero
-scale-bridge --port /dev/ttyUSB0 tare
-scale-bridge --port /dev/ttyUSB0 high-resolution
-scale-bridge --port /dev/ttyUSB0 metrology
-scale-bridge --port /dev/ttyUSB0 about
-scale-bridge --port /dev/ttyUSB0 diagnostic
+scale-bridge --serial-port /dev/ttyUSB0 --baud 9600 weight
+scale-bridge --serial-port COM3 status
+scale-bridge --serial-port /dev/ttyUSB0 zero
+scale-bridge --serial-port /dev/ttyUSB0 tare
+scale-bridge --serial-port /dev/ttyUSB0 high-resolution
+scale-bridge --serial-port /dev/ttyUSB0 metrology
+scale-bridge --serial-port /dev/ttyUSB0 about
+scale-bridge --serial-port /dev/ttyUSB0 diagnostic
 
 # TCP/Ethernet (scale has built-in Ethernet)
 scale-bridge --host 192.168.1.50 --tcp-port 3001 weight
 
 # Streaming
-scale-bridge --port /dev/ttyUSB0 weight --watch
-scale-bridge --port /dev/ttyUSB0 weight --watch --interval 500ms
+scale-bridge --serial-port /dev/ttyUSB0 weight --watch
+scale-bridge --serial-port /dev/ttyUSB0 weight --watch --interval 500ms
 
 # Output formats
-scale-bridge --port /dev/ttyUSB0 weight --output text
-scale-bridge --port /dev/ttyUSB0 weight --output json
-scale-bridge --port /dev/ttyUSB0 weight --output csv
+scale-bridge --serial-port /dev/ttyUSB0 weight --output text
+scale-bridge --serial-port /dev/ttyUSB0 weight --output json
+scale-bridge --serial-port /dev/ttyUSB0 weight --output csv
 
 # Server (stubbed)
 scale-bridge serve --port 8443 --scale-port /dev/ttyUSB0 --cert cert.pem --key key.pem

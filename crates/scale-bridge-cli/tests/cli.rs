@@ -109,7 +109,15 @@ fn systemd_flag_is_accepted() {
 #[test]
 fn parity_flag_is_accepted() {
     mock_cmd()
-        .args(["--parity", "odd", "weight"])
+        .args(["--serial-port", "/dev/ttyUSB0", "--parity", "odd", "weight"])
+        .assert()
+        .success();
+}
+
+#[test]
+fn legacy_port_alias_is_accepted() {
+    mock_cmd()
+        .args(["--port", "/dev/ttyUSB0", "weight"])
         .assert()
         .success();
 }

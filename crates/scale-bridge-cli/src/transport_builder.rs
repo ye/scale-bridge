@@ -91,7 +91,7 @@ pub fn build_transport(cli: &Cli) -> Result<AnyTransport, ScaleError> {
     }
 
     #[cfg(feature = "serial")]
-    if let Some(port) = &cli.port {
+    if let Some(port) = &cli.serial_port {
         return Ok(AnyTransport::Serial(scale_bridge_core::SerialTransport::open(
             port,
             cli.baud,
@@ -101,6 +101,6 @@ pub fn build_transport(cli: &Cli) -> Result<AnyTransport, ScaleError> {
 
     Err(ScaleError::Transport(std::io::Error::new(
         std::io::ErrorKind::InvalidInput,
-        "specify --port (serial) or --host (TCP/Ethernet)",
+        "specify --serial-port (serial) or --host (TCP/Ethernet)",
     )))
 }

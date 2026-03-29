@@ -1,7 +1,7 @@
 1. ➜  scale-bridge git:(main) ✗ ./target/release/scale-bridge serve --port 8443 --scale-port /dev/ttyUSB0 --cert cert.pem --key key.pem
-error: transport error: specify --port (serial) or --host (TCP/Ethernet)
+error: transport error: specify --serial-port (serial) or --host (TCP/Ethernet)
 
-Error message should say specify --comm-port (serial); differentiate the HTTPS port to --https-port instead of --port
+Error message should say specify --serial-port (serial); differentiate the HTTPS port to --https-port instead of --port
 
 2. add author (ye + email)
 
@@ -15,4 +15,4 @@ Error message should say specify --comm-port (serial); differentiate the HTTPS p
 
 7. remove SCP-01.pdf maybe license restriction. Need to review legal on publishing it on MIT license open source
 
-8. --port /dev/ttyUSB0 --baud 9600 default those if not provided in command line. Also print it out to notify. also having -v off to disable / quiet it.
+8. --serial-port /dev/ttyUSB0 --baud 9600 default those if not provided in command line. Also print it out to notify. also having -v off to disable / quiet it.
