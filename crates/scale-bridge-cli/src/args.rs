@@ -19,6 +19,8 @@ use std::time::Duration;
         Connection:\n  \
         Serial:   --serial-port /dev/ttyUSB0 --baud 9600 --parity even\n  \
         Ethernet: --host 192.168.1.50 --tcp-port 3001\n\n\
+        HTTPS server:\n  \
+        scale-bridge --serial-port /dev/ttyUSB0 serve --https-port 443 --bind 127.0.0.1 --cert cert.pem --key key.pem\n\n\
         Set SCALE_BRIDGE_MOCK=1 to use built-in mock transport for testing.",
     after_help = "Author:\n  Ye Wang <ye@users.noreply.github.com>"
 )]
@@ -35,11 +37,11 @@ pub struct Cli {
     #[arg(long, default_value = "even")]
     pub parity: SerialParity,
 
-    /// TCP hostname for scales with built-in Ethernet
+    /// TCP hostname of the scale for Ethernet-connected devices
     #[arg(long, conflicts_with = "serial_port")]
     pub host: Option<String>,
 
-    /// TCP port number
+    /// TCP port number of the scale for Ethernet-connected devices
     #[arg(long = "tcp-port", default_value = "3001")]
     pub tcp_port: u16,
 
@@ -100,6 +102,13 @@ pub enum Commands {
         #[arg(long, short, default_value = "text")]
         output: OutputFormat,
     },
+    #[command(
+        long_about = "Start the HTTPS REST server.\n\n\
+            The HTTPS listener is controlled by --https-port and --bind.\n\
+            The scale connection is separate: use --serial-port for a local serial device, or --host/--tcp-port for an Ethernet-connected scale.\n\n\
+            Example:\n  \
+            scale-bridge --serial-port /dev/ttyUSB0 serve --https-port 443 --bind 127.0.0.1 --cert cert.pem --key key.pem"
+    )]
     /// Start HTTPS REST server
     Serve {
         /// HTTPS port

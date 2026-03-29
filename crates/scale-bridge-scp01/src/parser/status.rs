@@ -125,6 +125,11 @@ pub fn parse_status_bytes(bytes: &[u8]) -> Result<ScaleStatus, ScaleError> {
 ///
 /// Returns `(data_bytes, status_bytes)` with LF/CR/ETX stripped.
 pub fn extract_status_bytes(frame: &[u8]) -> Result<(Vec<u8>, Vec<u8>), ScaleError> {
+    let first_lf = frame
+        .iter()
+        .position(|&b| b == 0x0A)
+        .ok_or_else(|| ScaleError::ParseError("could not locate leading LF in frame".into()))?;
+
     // Find second LF (0x0A) — status bytes start right after it
     let mut lf_count = 0usize;
     let mut status_start = None;
@@ -149,10 +154,15 @@ pub fn extract_status_bytes(frame: &[u8]) -> Result<(Vec<u8>, Vec<u8>), ScaleErr
         .map(|p| start + p)
         .ok_or_else(|| ScaleError::ParseError("no CR after status bytes".into()))?;
 
-    // Data bytes: between first LF and first CR
-    let data_end = frame.iter().position(|&b| b == 0x0D).unwrap_or(frame.len());
-    let data: Vec<u8> = frame[1..data_end].to_vec(); // skip leading LF
+    // Data bytes: between first LF and the CR before the second LF
+    let data_start = first_lf + 1;
+    let data_end = frame[data_start..]
+        .iter()
+        .position(|&b| b == 0x0D)
+        .map(|p| data_start + p)
+        .ok_or_else(|| ScaleError::ParseError("no CR after data bytes".into()))?;
 
+    let data: Vec<u8> = frame[data_start..data_end].to_vec();
     let status_bytes = frame[start..end].to_vec();
     Ok((data, status_bytes))
 }
@@ -321,6 +331,12 @@ mod tests {
         let (data, status) = extract_status_bytes(&frame).unwrap();
         assert_eq!(data, b"  1234.56lb");
         assert_eq!(status, vec![b1, b2]);
+    }
+
+    #[test]
+    fn extract_status_bytes_handles_malformed_cr_before_lf_without_panicking() {
+        let frame = [0x0D, 0x0A, 0x0A, 0x0D];
+        let _ = extract_status_bytes(&frame);
     }
 
     #[test]
