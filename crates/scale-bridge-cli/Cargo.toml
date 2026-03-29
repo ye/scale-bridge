@@ -1,0 +1,23 @@
+[package]
+name = "scale-bridge-cli"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "scale-bridge"
+path = "src/main.rs"
+
+[dependencies]
+scale-bridge-core = { path = "../scale-bridge-core", features = ["serial"] }
+scale-bridge-scp01 = { path = "../scale-bridge-scp01" }
+scale-bridge-server = { path = "../scale-bridge-server" }
+clap = { workspace = true }
+rust_decimal = { workspace = true }
+serde_json = { workspace = true }
+chrono = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = "0.3"
+
+[dev-dependencies]
+assert_cmd = { workspace = true }
+predicates = { workspace = true }

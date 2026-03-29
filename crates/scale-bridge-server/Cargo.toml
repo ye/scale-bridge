@@ -1,0 +1,8 @@
+[package]
+name = "scale-bridge-server"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+scale-bridge-core = { path = "../scale-bridge-core" }
+tracing = { workspace = true }

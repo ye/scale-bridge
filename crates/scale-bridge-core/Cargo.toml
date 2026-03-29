@@ -1,0 +1,14 @@
+[package]
+name = "scale-bridge-core"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+tracing = { workspace = true }
+serialport = { workspace = true, optional = true }
+
+[features]
+default = ["serial"]
+serial = ["dep:serialport"]
+
+[dev-dependencies]
