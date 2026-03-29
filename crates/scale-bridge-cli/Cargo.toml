@@ -7,11 +7,17 @@ edition = "2021"
 name = "scale-bridge"
 path = "src/main.rs"
 
+[[bin]]
+name = "scale-bridge-generate"
+path = "src/generate.rs"
+
 [dependencies]
 scale-bridge-core = { path = "../scale-bridge-core" }
 scale-bridge-scp01 = { path = "../scale-bridge-scp01" }
 scale-bridge-server = { path = "../scale-bridge-server" }
 clap = { workspace = true }
+clap_complete = { workspace = true }
+clap_mangen = { workspace = true }
 rust_decimal = { workspace = true }
 serde_json = { workspace = true }
 chrono = { workspace = true }

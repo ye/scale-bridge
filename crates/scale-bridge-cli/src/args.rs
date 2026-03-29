@@ -4,7 +4,16 @@ use std::time::Duration;
 #[derive(Parser, Debug)]
 #[command(
     name = "scale-bridge",
-    about = "Avery WeighTronix scale CLI — SCP-01/NCI protocol"
+    version,
+    about = "Avery WeighTronix scale CLI — SCP-01/NCI protocol",
+    long_about = "scale-bridge communicates with Avery WeighTronix digital bench scales\n\
+        over serial (RS-232/USB) or Ethernet using the SCP-01/NCI protocol.\n\n\
+        One-shot mode: query the scale once and exit.\n\
+        Watch mode (--watch): stream readings until Ctrl-C.\n\n\
+        Connection:\n  \
+        Serial:   --port /dev/ttyUSB0 --baud 9600\n  \
+        Ethernet: --host 192.168.1.50 --tcp-port 3001\n\n\
+        Set SCALE_BRIDGE_MOCK=1 to use built-in mock transport for testing."
 )]
 pub struct Cli {
     /// Serial port path (e.g. /dev/ttyUSB0 or COM3)

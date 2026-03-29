@@ -49,6 +49,25 @@ size: release
 fuzz:
     cargo nextest run -p scale-bridge-scp01 --test fuzz
 
+# Generate man page and shell completions into target/generated/
+generate: release
+    mkdir -p target/generated
+    ./target/release/scale-bridge-generate target/generated
+    @echo "Man page:    target/generated/man/scale-bridge.1"
+    @echo "Completions: target/generated/completions/"
+
+# Install to /usr/local (or set PREFIX= to override)
+install:
+    ./install.sh
+
+# Uninstall from /usr/local (or set PREFIX= to override)
+uninstall:
+    ./install.sh --uninstall
+
+# Preview the man page without installing
+man: generate
+    man target/generated/man/scale-bridge.1
+
 # Clean build artifacts
 clean:
     cargo clean

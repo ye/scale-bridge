@@ -1,16 +1,15 @@
 # scale-bridge Design Spec
-# Avery WeighTronix AWT Scale CLI + Library
+# Avery Weigh-Tronix(AWT) Scale CLI + Library
 
 **Date:** 2026-03-28
-**Status:** Approved
 
 ## Problem
 
-Avery WeighTronix Digital Bench Scales communicate via the SCP-01 (NCI) serial protocol over RS-232/USB. No cross-platform Rust tool exists to query them from scripts, automation pipelines, or web applications. The architecture must support future integration of other scale brands, connection types (Serial, USB, Ethernet), and a local HTTPS REST server for web app access.
+Avery Weigh-Tronix Digital Bench Scales communicate via the SCP-01 (NCI) serial protocol over RS-232/USB. No cross-platform Rust tool exists to query them from scripts, automation pipelines, or web applications. The architecture must support future integration of other scale brands, connection types (Serial, USB, Ethernet), and a local HTTPS REST server for web app access.
 
 ## Goals
 
-- Cross-platform Rust library + CLI binary for AWT scales via SCP-01/NCI protocol
+- Cross-platform Rust library + CLI utility for AWT scales via SCP-01/NCI protocol
 - One-shot commands + `--watch` streaming mode
 - Text, JSON, and CSV output formats
 - Architecture that supports new brands/protocols without refactoring
