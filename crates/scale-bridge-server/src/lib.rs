@@ -300,6 +300,16 @@ async fn tare(State(state): State<AppState>) -> Result<StatusCode, ApiError> {
     }
 }
 
+async fn units(State(state): State<AppState>) -> Result<StatusCode, ApiError> {
+    match send_command(state, NciCommand::Units).await? {
+        NciResponse::Acknowledged | NciResponse::Status(_) => Ok(StatusCode::NO_CONTENT),
+        other => Err(ApiError::new(
+            StatusCode::BAD_GATEWAY,
+            format!("unexpected response for units: {other:?}"),
+        )),
+    }
+}
+
 async fn health() -> StatusCode {
     StatusCode::OK
 }
@@ -336,6 +346,7 @@ fn app(state: AppState) -> Router {
         .route("/api/diagnostic", get(diagnostic))
         .route("/api/zero", post(zero))
         .route("/api/tare", post(tare))
+        .route("/api/units", post(units))
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(tracing::Level::INFO))
@@ -504,6 +515,25 @@ mod tests {
                 Request::builder()
                     .method("POST")
                     .uri("/api/zero")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::NO_CONTENT);
+        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        assert!(body.is_empty());
+    }
+
+    #[tokio::test]
+    async fn units_returns_no_content_for_status_reply() {
+        let app = app_with_response(b"\x0aS00\x0d\x03".to_vec());
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/units")
                     .body(Body::empty())
                     .unwrap(),
             )
