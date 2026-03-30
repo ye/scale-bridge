@@ -37,10 +37,15 @@ impl ScaleStatus {
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum WeightUnit {
+    #[serde(rename = "lb")]
     Lb,
+    #[serde(rename = "kg")]
     Kg,
+    #[serde(rename = "oz")]
     Oz,
+    #[serde(rename = "g")]
     G,
+    #[serde(rename = "lb oz")]
     LbOz,
 }
 
