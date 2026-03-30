@@ -1,0 +1,77 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-release:
+    name: "Release Build (${{ matrix.name }})"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: linux
+            os: ubuntu-latest
+            archive_name: scale-bridge-linux-x86_64.tar.gz
+            package_dir: scale-bridge-linux-x86_64
+            binary_suffix: ""
+          - name: macos
+            os: macos-latest
+            archive_name: scale-bridge-macos.tar.gz
+            package_dir: scale-bridge-macos
+            binary_suffix: ""
+          - name: windows
+            os: windows-latest
+            archive_name: scale-bridge-windows-x86_64.zip
+            package_dir: scale-bridge-windows-x86_64
+            binary_suffix: ".exe"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry and build artifacts
+        uses: Swatinem/rust-cache@v2
+
+      - name: Install libudev-dev (Linux only)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev
+
+      - name: Build release binaries
+        run: cargo build --release --bins
+
+      - name: Prepare package directory
+        shell: bash
+        run: |
+          rm -rf "${{ matrix.package_dir }}"
+          mkdir -p "${{ matrix.package_dir }}"
+          cp "target/release/scale-bridge${{ matrix.binary_suffix }}" "${{ matrix.package_dir }}/"
+          cp "target/release/scale-bridge-generate${{ matrix.binary_suffix }}" "${{ matrix.package_dir }}/"
+          cp README.md "${{ matrix.package_dir }}/"
+
+      - name: Create tar.gz archive
+        if: matrix.name != 'windows'
+        shell: bash
+        run: tar -czf "${{ matrix.archive_name }}" "${{ matrix.package_dir }}"
+
+      - name: Create zip archive
+        if: matrix.name == 'windows'
+        shell: pwsh
+        run: Compress-Archive -Path "${{ matrix.package_dir }}" -DestinationPath "${{ matrix.archive_name }}"
+
+      - name: Upload archive to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ matrix.archive_name }}
+

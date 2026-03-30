@@ -68,6 +68,63 @@ The default serial settings used by the CLI are:
 - `7 data bits`
 - `1 stop bit`
 
+## Windows PowerShell
+
+Use the Windows executable from a PowerShell prompt:
+
+```powershell
+.\scale-bridge.exe --serial-port COM3 weight
+```
+
+Useful notes:
+
+- Windows serial ports are typically named `COM3`, `COM4`, and so on.
+- USB serial adapters usually appear in Device Manager under `Ports (COM & LPT)`.
+- If the scale is connected through a USB-to-serial adapter, note the assigned `COM` number and pass it to `--serial-port`.
+- The same default serial settings still apply: `9600` baud, even parity, `7` data bits, `1` stop bit.
+
+Example HTTPS server invocation from PowerShell:
+
+```powershell
+.\scale-bridge.exe --serial-port COM3 serve --https-port 8443 --bind 127.0.0.1 --cert .\cert.pem --key .\key.pem
+```
+
+## macOS
+
+Use the macOS executable from Terminal:
+
+```bash
+./scale-bridge --serial-port /dev/cu.usbserial-0001 weight
+```
+
+Useful notes:
+
+- USB serial devices on macOS commonly appear as `/dev/cu.usbserial-*`, `/dev/cu.usbmodem*`, `/dev/tty.usbserial-*`, or `/dev/tty.usbmodem*`.
+- Prefer the `/dev/cu.*` device for initiating outbound serial connections from the CLI.
+- To inspect available serial devices before and after plugging in the adapter, run `ls /dev/cu.* /dev/tty.*`.
+- The same default serial settings still apply: `9600` baud, even parity, `7` data bits, `1` stop bit.
+
+Example HTTPS server invocation on macOS:
+
+```bash
+./scale-bridge --serial-port /dev/cu.usbserial-0001 serve --https-port 8443 --bind 127.0.0.1 --cert ./cert.pem --key ./key.pem
+```
+
+## Release Builds
+
+Tagged releases use GitHub Actions to build downloadable archives for Linux, macOS, and Windows.
+
+- Create and push a version tag such as `v0.1.0`:
+
+```bash
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+- The `Release` workflow in `.github/workflows/release.yml` runs on tags matching `v*`.
+- It builds release binaries for Linux, macOS, and Windows, packages them, and attaches the archives to the GitHub Release page for that tag.
+- Each archive includes `scale-bridge`, `scale-bridge-generate`, and `README.md`.
+
 ## CLI Help
 
 The CLI has two levels of help:
