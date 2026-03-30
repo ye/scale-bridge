@@ -283,6 +283,10 @@ async fn diagnostic(State(state): State<AppState>) -> Result<Json<DiagnosticInfo
 async fn zero(State(state): State<AppState>) -> Result<StatusCode, ApiError> {
     match send_command(state, NciCommand::Zero).await? {
         NciResponse::Acknowledged | NciResponse::Status(_) => Ok(StatusCode::NO_CONTENT),
+        NciResponse::UnrecognizedCommand => Err(ApiError::new(
+            StatusCode::NOT_IMPLEMENTED,
+            "scale did not recognize command",
+        )),
         other => Err(ApiError::new(
             StatusCode::BAD_GATEWAY,
             format!("unexpected response for zero: {other:?}"),
@@ -293,6 +297,10 @@ async fn zero(State(state): State<AppState>) -> Result<StatusCode, ApiError> {
 async fn tare(State(state): State<AppState>) -> Result<StatusCode, ApiError> {
     match send_command(state, NciCommand::Tare).await? {
         NciResponse::Acknowledged | NciResponse::Status(_) => Ok(StatusCode::NO_CONTENT),
+        NciResponse::UnrecognizedCommand => Err(ApiError::new(
+            StatusCode::NOT_IMPLEMENTED,
+            "scale did not recognize command",
+        )),
         other => Err(ApiError::new(
             StatusCode::BAD_GATEWAY,
             format!("unexpected response for tare: {other:?}"),
@@ -303,6 +311,10 @@ async fn tare(State(state): State<AppState>) -> Result<StatusCode, ApiError> {
 async fn units(State(state): State<AppState>) -> Result<StatusCode, ApiError> {
     match send_command(state, NciCommand::Units).await? {
         NciResponse::Acknowledged | NciResponse::Status(_) => Ok(StatusCode::NO_CONTENT),
+        NciResponse::UnrecognizedCommand => Err(ApiError::new(
+            StatusCode::NOT_IMPLEMENTED,
+            "scale did not recognize command",
+        )),
         other => Err(ApiError::new(
             StatusCode::BAD_GATEWAY,
             format!("unexpected response for units: {other:?}"),
@@ -543,5 +555,25 @@ mod tests {
         assert_eq!(response.status(), StatusCode::NO_CONTENT);
         let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
         assert!(body.is_empty());
+    }
+
+    #[tokio::test]
+    async fn units_returns_not_implemented_for_unrecognized_command() {
+        let app = app_with_response(b"\x0a?\x0d\x03".to_vec());
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .method("POST")
+                    .uri("/api/units")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::NOT_IMPLEMENTED);
+        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let value: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(value["error"], "scale did not recognize command");
     }
 }
