@@ -79,12 +79,5 @@ pub fn print(response: &NciResponse) -> Result<(), ScaleError> {
 pub fn print_weight_conflict(status: &ScaleStatus) -> Result<(), ScaleError> {
     let display = weight_status_display(status);
     println!("{}", display.error);
-    if let Some(condition) = display.condition {
-        eprintln!(
-            "[condition: {} raw_status={}]",
-            condition,
-            status.raw_status.as_deref().unwrap_or("<binary>")
-        );
-    }
     Ok(())
 }
