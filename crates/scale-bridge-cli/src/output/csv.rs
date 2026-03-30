@@ -1,3 +1,4 @@
+use crate::output::weight_status_display;
 use chrono::Utc;
 use scale_bridge_core::ScaleError;
 use scale_bridge_scp01::{DisplayState, NciResponse};
@@ -28,5 +29,18 @@ pub fn print(response: &NciResponse) -> Result<(), ScaleError> {
             println!("{ts},{json}");
         }
     }
+    Ok(())
+}
+
+pub fn print_weight_conflict(status: &scale_bridge_scp01::ScaleStatus) -> Result<(), ScaleError> {
+    let ts = Utc::now().to_rfc3339();
+    let display = weight_status_display(status);
+    println!(
+        "{},{},{},{}",
+        ts,
+        display.error,
+        display.condition.unwrap_or(""),
+        status.raw_status.as_deref().unwrap_or("")
+    );
     Ok(())
 }

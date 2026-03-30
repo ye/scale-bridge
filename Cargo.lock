@@ -1419,6 +1419,7 @@ dependencies = [
  "scale-bridge-core",
  "scale-bridge-scp01",
  "scale-bridge-server",
+ "serde",
  "serde_json",
  "serialport",
  "tracing",

@@ -1,5 +1,5 @@
 use crate::args::{Commands, OutputFormat};
-use crate::output::print_response;
+use crate::output::{print_response, print_weight_conflict};
 use crate::transport_builder::AnyTransport;
 use scale_bridge_core::{Codec, EtxCodec, Protocol, Scale, ScaleError, Transport};
 use scale_bridge_scp01::{NciCommand, NciProtocol, NciResponse};
@@ -74,7 +74,12 @@ where
 {
     loop {
         let resp = scale.send(cmd.clone())?;
-        print_response(&resp, output)?;
+        match (&cmd, &resp) {
+            (NciCommand::Weight | NciCommand::HighResolution, NciResponse::Status(status)) => {
+                print_weight_conflict(status, output)?
+            }
+            _ => print_response(&resp, output)?,
+        }
         if !watch {
             break;
         }

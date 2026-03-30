@@ -1,5 +1,7 @@
 use scale_bridge_core::ScaleError;
-use scale_bridge_scp01::{DisplayState, NciResponse};
+use scale_bridge_scp01::{DisplayState, NciResponse, ScaleStatus};
+
+use crate::output::weight_status_display;
 
 pub fn print(response: &NciResponse) -> Result<(), ScaleError> {
     match response {
@@ -70,6 +72,19 @@ pub fn print(response: &NciResponse) -> Result<(), ScaleError> {
         NciResponse::UnrecognizedCommand => {
             eprintln!("scale did not recognize the command");
         }
+    }
+    Ok(())
+}
+
+pub fn print_weight_conflict(status: &ScaleStatus) -> Result<(), ScaleError> {
+    let display = weight_status_display(status);
+    println!("{}", display.error);
+    if let Some(condition) = display.condition {
+        eprintln!(
+            "[condition: {} raw_status={}]",
+            condition,
+            status.raw_status.as_deref().unwrap_or("<binary>")
+        );
     }
     Ok(())
 }
