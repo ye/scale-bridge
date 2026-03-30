@@ -10,7 +10,7 @@ fn parse_ascii_status(s: &str) -> Result<ScaleStatus, ScaleError> {
     }
 
     let leader = trimmed.as_bytes()[0].to_ascii_uppercase();
-    let motion = match leader {
+    let leader_motion = match leader {
         b'S' => false,
         b'M' => true,
         _ => {
@@ -24,10 +24,12 @@ fn parse_ascii_status(s: &str) -> Result<ScaleStatus, ScaleError> {
         .get(1..)
         .and_then(|rest| u8::from_str_radix(rest, 16).ok())
         .unwrap_or(0);
+    let motion = leader_motion;
+    let at_zero = flag_bits & 0x20 != 0;
 
     Ok(ScaleStatus {
         motion,
-        at_zero: flag_bits & 0x01 != 0,
+        at_zero,
         under_capacity: false,
         over_capacity: false,
         ram_error: false,
@@ -37,6 +39,7 @@ fn parse_ascii_status(s: &str) -> Result<ScaleStatus, ScaleError> {
         net_weight: false,
         initial_zero_error: false,
         range: WeightRange::Low,
+        raw_status: Some(trimmed.to_string()),
     })
 }
 
@@ -116,6 +119,7 @@ pub fn parse_status_bytes(bytes: &[u8]) -> Result<ScaleStatus, ScaleError> {
         net_weight,
         initial_zero_error,
         range,
+        raw_status: None,
     })
 }
 
@@ -355,9 +359,17 @@ mod tests {
 
     #[test]
     fn parses_ascii_at_zero_flag() {
-        let status = parse_status_bytes(b"S01").unwrap();
+        let status = parse_status_bytes(b"S20").unwrap();
         assert!(status.at_zero);
         assert!(!status.motion);
+    }
+
+    #[test]
+    fn parses_ascii_motion_flag() {
+        let status = parse_status_bytes(b"S10").unwrap();
+        assert!(!status.motion);
+        assert!(!status.at_zero);
+        assert_eq!(status.raw_status.as_deref(), Some("S10"));
     }
 
     #[test]

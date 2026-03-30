@@ -60,7 +60,7 @@ mod tests {
 
     #[test]
     fn weight_returns_status_when_scale_replies_with_standalone_status_frame() {
-        let resp = parse_frame(&NciCommand::Weight, b"\x0aS01\x0d\x03").unwrap();
+        let resp = parse_frame(&NciCommand::Weight, b"\x0aS20\x0d\x03").unwrap();
         match resp {
             NciResponse::Status(s) => assert!(s.at_zero),
             other => panic!("expected Status, got {other:?}"),

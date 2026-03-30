@@ -110,6 +110,24 @@ struct ErrorBody {
     detail: Option<serde_json::Value>,
 }
 
+#[derive(Debug, Serialize)]
+struct WeightStatusConflictDetail {
+    #[serde(flatten)]
+    status: ScaleStatus,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    condition: Option<&'static str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    raw_status: Option<String>,
+}
+
+fn weight_status_condition(status: &ScaleStatus) -> Option<&'static str> {
+    match status.raw_status.as_deref() {
+        Some("S10") => Some("weight not ready / unstable / dynamic-load condition"),
+        Some("S20") => Some("scale is at zero"),
+        _ => None,
+    }
+}
+
 #[derive(Debug)]
 struct ApiError {
     status: StatusCode,
@@ -171,7 +189,13 @@ async fn send_command(state: AppState, cmd: NciCommand) -> Result<NciResponse, A
             .scale
             .lock()
             .map_err(|_| ApiError::new(StatusCode::INTERNAL_SERVER_ERROR, "scale lock poisoned"))?;
-        scale.send(cmd).map_err(ApiError::from)
+        match scale.send(cmd.clone()) {
+            Ok(response) => Ok(response),
+            Err(err) => {
+                tracing::warn!(command = ?cmd, error = %err, "scale command failed");
+                Err(ApiError::from(err))
+            }
+        }
     })
     .await
     .map_err(|e| ApiError::new(StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?
@@ -180,14 +204,35 @@ async fn send_command(state: AppState, cmd: NciCommand) -> Result<NciResponse, A
 async fn weight(State(state): State<AppState>) -> Result<Json<WeightReading>, ApiError> {
     match send_command(state, NciCommand::Weight).await? {
         NciResponse::Weight(w) | NciResponse::HighResolution(w) => Ok(Json(w)),
-        NciResponse::Status(s) => Err(
-            ApiError::with_detail(
-                StatusCode::CONFLICT,
-                "scale returned status instead of weight",
-                s,
+        NciResponse::Status(s) => {
+            let condition = weight_status_condition(&s);
+            let error = if matches!(condition, Some("weight not ready / unstable / dynamic-load condition")) {
+                "weight not ready"
+            } else {
+                "scale returned status instead of weight"
+            };
+
+            tracing::warn!(
+                command = ?NciCommand::Weight,
+                error = error,
+                condition = condition.unwrap_or("unknown"),
+                raw_status = s.raw_status.as_deref().unwrap_or("<binary>"),
+                "weight command returned standalone status"
+            );
+
+            Err(
+                ApiError::with_detail(
+                    StatusCode::CONFLICT,
+                    error,
+                    WeightStatusConflictDetail {
+                        condition,
+                        raw_status: s.raw_status.clone(),
+                        status: s,
+                    },
+                )
+                .map_err(|e| ApiError::new(StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?,
             )
-            .map_err(|e| ApiError::new(StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?,
-        ),
+        }
         other => Err(ApiError::new(
             StatusCode::BAD_GATEWAY,
             format!("unexpected response for weight: {other:?}"),
@@ -407,7 +452,31 @@ mod tests {
 
     #[tokio::test]
     async fn weight_returns_conflict_when_scale_replies_with_status_only() {
-        let app = app_with_response(b"\x0aS01\x0d\x03".to_vec());
+        let app = app_with_response(b"\x0aS10\x0d\x03".to_vec());
+        let response = app
+            .oneshot(
+                Request::builder()
+                    .uri("/api/weight")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(response.status(), StatusCode::CONFLICT);
+        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let value: serde_json::Value = serde_json::from_slice(&body).unwrap();
+        assert_eq!(value["error"], "weight not ready");
+        assert_eq!(
+            value["detail"]["condition"],
+            "weight not ready / unstable / dynamic-load condition"
+        );
+        assert_eq!(value["detail"]["raw_status"], "S10");
+    }
+
+    #[tokio::test]
+    async fn weight_returns_zero_condition_when_scale_replies_with_zero_status_only() {
+        let app = app_with_response(b"\x0aS20\x0d\x03".to_vec());
         let response = app
             .oneshot(
                 Request::builder()
@@ -423,6 +492,8 @@ mod tests {
         let value: serde_json::Value = serde_json::from_slice(&body).unwrap();
         assert_eq!(value["error"], "scale returned status instead of weight");
         assert_eq!(value["detail"]["at_zero"], true);
+        assert_eq!(value["detail"]["condition"], "scale is at zero");
+        assert_eq!(value["detail"]["raw_status"], "S20");
     }
 
     #[tokio::test]

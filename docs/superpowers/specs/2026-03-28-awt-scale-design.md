@@ -141,6 +141,21 @@ Where `<ETX>` = 0x03, `<LF>` = 0x0A, `<CR>` = 0x0D
 
 Scale replies `?<CR><LF><ETX>` for unrecognized commands.
 
+Observed ASCII status behavior on the tested `NCI 6720-30`:
+
+- `S00`: stable non-zero reading
+- `S10`: weight not ready / unstable / dynamic-load condition
+- `S20`: zero condition
+
+Representative raw frames from the tested unit:
+
+- Stable non-zero weight:
+  `<LF>002.98LB<CR><LF>S00<CR><ETX>`
+- Unstable weight request:
+  `<LF>S10<CR><ETX>`
+- Zero weight:
+  `<LF>000.00LB<CR><LF>S20<CR><ETX>`
+
 ---
 
 ## Data Types (`scale-bridge-scp01`)

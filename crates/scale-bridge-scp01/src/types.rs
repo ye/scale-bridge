@@ -23,6 +23,8 @@ pub struct ScaleStatus {
     pub net_weight: bool,
     pub initial_zero_error: bool,
     pub range: WeightRange,
+    #[serde(skip_serializing)]
+    pub raw_status: Option<String>,
 }
 
 impl ScaleStatus {

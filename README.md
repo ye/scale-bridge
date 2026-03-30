@@ -6,7 +6,7 @@ Rust CLI and library for Avery Weigh-Tronix scales speaking the SCP-01/NCI proto
 
 The implementation has been validated against this device:
 
-- Model: `NCI 6720-15`
+- Model: `NCI 6720-30`
 - Capacity: `15 kg / 30 lb`
 
 Observed device-specific behavior on that unit:
@@ -14,7 +14,7 @@ Observed device-specific behavior on that unit:
 - Serial parity must be `even`. The CLI now defaults to `--parity even`.
 - `weight` replies use uppercase units such as `LB`.
 - `status` replies may be standalone ASCII frames such as `S00`.
-- `weight` may also reply with a standalone ASCII status frame such as `S01` instead of a weight payload.
+- `weight` may also reply with a standalone ASCII status frame such as `S10` instead of a weight payload when the load is unstable.
 - Unsupported commands reply with framed `?` responses like `LF ? CR ETX`.
 
 ## Supported Commands On Tested Hardware
@@ -25,7 +25,7 @@ Verified working:
 - `status`
 - `zero`
 
-Verified unsupported on the tested `NCI 6720-15`:
+Verified unsupported on the tested `NCI 6720-30`:
 
 - `tare`
 - `metrology`
@@ -34,13 +34,24 @@ Verified unsupported on the tested `NCI 6720-15`:
 
 Unsupported commands were observed returning the framed `?` response on the wire.
 
-## Operational Notes For NCI 6720-15
+## Operational Notes For NCI 6720-30
 
-- If the metal weigh tray is lifted or removed, `weight` may return a status-only response instead of a numeric weight.
-- On the tested unit, a standalone `S01` reply was observed in that state and maps to `at_zero=true`.
+- The tested unit uses ASCII status codes in weight responses and standalone status frames.
+- `S00` means the reading is stable and non-zero.
+- `S10` means the weight is not ready because the load is unstable or changing.
+- `S20` means the scale is at zero. On the tested unit, this matches the illuminated zero indicator on the LCD.
 - `zero` is recognized by the scale, but it may not actually zero the displayed weight if the current load is outside the scale's allowed zero window.
 - In testing, issuing `zero` with about `1.32 lb` present returned a status reply and the follow-up weight remained non-zero.
 - Treat this as device behavior or configuration/calibration state, not a transport or parser failure.
+
+Representative raw responses observed on the tested unit:
+
+- Stable non-zero reading with `S00`:
+  `LF 002.98LB CR LF S00 CR ETX`
+- Unstable dynamic load with `S10`:
+  `LF S10 CR ETX`
+- Zero reading with `S20`:
+  `LF 000.00LB CR LF S20 CR ETX`
 
 ## Serial Usage
 
@@ -87,4 +98,4 @@ DEBUG tx: 57 0D
 DEBUG rx: 0A 30 30 31 2E 33 34 4C 42 0D 0A 53 30 30 0D 03
 ```
 
-That response decodes to `1.34 lb` with ASCII status `S00`.
+That response decodes to `1.34 lb` with ASCII status `S00`, meaning a stable non-zero reading.
