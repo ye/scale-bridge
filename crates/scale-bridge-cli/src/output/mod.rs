@@ -18,7 +18,10 @@ pub fn weight_status_display(status: &ScaleStatus) -> WeightStatusDisplay<'_> {
         Some("S20") => Some("scale is at zero"),
         _ => None,
     };
-    let error = if matches!(condition, Some("weight not ready / unstable / dynamic-load condition")) {
+    let error = if matches!(
+        condition,
+        Some("weight not ready / unstable / dynamic-load condition")
+    ) {
         "weight not ready"
     } else {
         "scale returned status instead of weight"
@@ -39,7 +42,10 @@ pub fn print_response(response: &NciResponse, format: &OutputFormat) -> Result<(
     }
 }
 
-pub fn print_weight_conflict(status: &ScaleStatus, format: &OutputFormat) -> Result<(), ScaleError> {
+pub fn print_weight_conflict(
+    status: &ScaleStatus,
+    format: &OutputFormat,
+) -> Result<(), ScaleError> {
     match format {
         OutputFormat::Text => text::print_weight_conflict(status),
         OutputFormat::Json => json::print_weight_conflict(status),

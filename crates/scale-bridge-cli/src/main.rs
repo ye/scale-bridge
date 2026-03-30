@@ -3,9 +3,9 @@ mod output;
 mod runner;
 mod transport_builder;
 
+use crate::args::Commands;
 use args::Cli;
 use clap::Parser;
-use crate::args::Commands;
 use scale_bridge_core::ScaleError;
 use transport_builder::build_transport;
 

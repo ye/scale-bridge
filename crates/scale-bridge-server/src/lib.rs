@@ -11,12 +11,12 @@ use axum::{
     Json, Router,
 };
 use axum_server::tls_rustls::RustlsConfig;
-use scale_bridge_core::{EtxCodec, Scale, ScaleError, SerialTransport, TcpTransport, Transport};
 #[cfg(test)]
 use scale_bridge_core::MockTransport;
+use scale_bridge_core::{EtxCodec, Scale, ScaleError, SerialTransport, TcpTransport, Transport};
 use scale_bridge_scp01::{
-    AboutInfo, DiagnosticInfo, MetrologyReading, NciCommand, NciProtocol, NciResponse,
-    ScaleStatus, WeightReading,
+    AboutInfo, DiagnosticInfo, MetrologyReading, NciCommand, NciProtocol, NciResponse, ScaleStatus,
+    WeightReading,
 };
 use serde::Serialize;
 use std::{
@@ -206,7 +206,10 @@ async fn weight(State(state): State<AppState>) -> Result<Json<WeightReading>, Ap
         NciResponse::Weight(w) | NciResponse::HighResolution(w) => Ok(Json(w)),
         NciResponse::Status(s) => {
             let condition = weight_status_condition(&s);
-            let error = if matches!(condition, Some("weight not ready / unstable / dynamic-load condition")) {
+            let error = if matches!(
+                condition,
+                Some("weight not ready / unstable / dynamic-load condition")
+            ) {
                 "weight not ready"
             } else {
                 "scale returned status instead of weight"
@@ -220,18 +223,16 @@ async fn weight(State(state): State<AppState>) -> Result<Json<WeightReading>, Ap
                 "weight command returned standalone status"
             );
 
-            Err(
-                ApiError::with_detail(
-                    StatusCode::CONFLICT,
-                    error,
-                    WeightStatusConflictDetail {
-                        condition,
-                        raw_status: s.raw_status.clone(),
-                        status: s,
-                    },
-                )
-                .map_err(|e| ApiError::new(StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?,
+            Err(ApiError::with_detail(
+                StatusCode::CONFLICT,
+                error,
+                WeightStatusConflictDetail {
+                    condition,
+                    raw_status: s.raw_status.clone(),
+                    status: s,
+                },
             )
+            .map_err(|e| ApiError::new(StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?)
         }
         other => Err(ApiError::new(
             StatusCode::BAD_GATEWAY,
@@ -374,19 +375,21 @@ pub fn serve(config: ServerConfig) -> Result<(), Box<dyn std::error::Error>> {
         .build()?;
 
     runtime.block_on(async move {
-        let cert_path = config
-            .cert_path
-            .clone()
-            .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "missing --cert"))?;
-        let key_path = config
-            .key_path
-            .clone()
-            .ok_or_else(|| std::io::Error::new(std::io::ErrorKind::InvalidInput, "missing --key"))?;
+        let cert_path = config.cert_path.clone().ok_or_else(|| {
+            std::io::Error::new(std::io::ErrorKind::InvalidInput, "missing --cert")
+        })?;
+        let key_path = config.key_path.clone().ok_or_else(|| {
+            std::io::Error::new(std::io::ErrorKind::InvalidInput, "missing --key")
+        })?;
 
         let tls = RustlsConfig::from_pem_file(cert_path, key_path).await?;
         let transport = build_transport(&config)?;
         let state = AppState {
-            scale: Arc::new(Mutex::new(Scale::new(transport, EtxCodec::new(), NciProtocol))),
+            scale: Arc::new(Mutex::new(Scale::new(
+                transport,
+                EtxCodec::new(),
+                NciProtocol,
+            ))),
         };
         let app = app(state);
         let addr = SocketAddr::from_str(&format!("{}:{}", config.bind_addr, config.https_port))?;
@@ -416,7 +419,11 @@ mod tests {
     fn app_with_response(response: Vec<u8>) -> Router {
         let transport = ServerTransport::Mock(MockTransport::with_response(response));
         let state = AppState {
-            scale: Arc::new(Mutex::new(Scale::new(transport, EtxCodec::new(), NciProtocol))),
+            scale: Arc::new(Mutex::new(Scale::new(
+                transport,
+                EtxCodec::new(),
+                NciProtocol,
+            ))),
         };
         app(state)
     }
@@ -425,7 +432,12 @@ mod tests {
     async fn healthz_returns_ok() {
         let app = app_with_response(vec![]);
         let response = app
-            .oneshot(Request::builder().uri("/healthz").body(Body::empty()).unwrap())
+            .oneshot(
+                Request::builder()
+                    .uri("/healthz")
+                    .body(Body::empty())
+                    .unwrap(),
+            )
             .await
             .unwrap();
 

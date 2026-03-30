@@ -31,7 +31,12 @@ use std::time::Duration;
 )]
 pub struct Cli {
     /// Serial port path (e.g. /dev/ttyUSB0 or COM3)
-    #[arg(long = "serial-port", alias = "port", conflicts_with = "host", global = true)]
+    #[arg(
+        long = "serial-port",
+        alias = "port",
+        conflicts_with = "host",
+        global = true
+    )]
     pub serial_port: Option<String>,
 
     /// Baud rate for serial connection
@@ -107,13 +112,11 @@ pub enum Commands {
         #[arg(long, short, default_value = "text")]
         output: OutputFormat,
     },
-    #[command(
-        long_about = "Start the HTTPS REST server.\n\n\
+    #[command(long_about = "Start the HTTPS REST server.\n\n\
             The HTTPS listener is controlled by --https-port and --bind.\n\
             The scale connection is separate: use the top-level --serial-port for a local serial device, or --host/--tcp-port for an Ethernet-connected scale.\n\n\
             Example:\n  \
-            scale-bridge --serial-port /dev/ttyUSB0 serve --https-port 443 --bind 127.0.0.1 --cert cert.pem --key key.pem"
-    )]
+            scale-bridge --serial-port /dev/ttyUSB0 serve --https-port 443 --bind 127.0.0.1 --cert cert.pem --key key.pem")]
     /// Start HTTPS REST server
     Serve {
         /// HTTPS port

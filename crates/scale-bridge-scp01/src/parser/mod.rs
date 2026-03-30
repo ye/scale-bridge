@@ -23,8 +23,8 @@ pub fn parse_frame(cmd: &NciCommand, frame: &[u8]) -> Result<NciResponse, ScaleE
     match cmd {
         NciCommand::Weight | NciCommand::HighResolution => {
             if let Ok(s) = status::parse_status_only(frame) {
-                let is_standalone_status_frame =
-                    frame.first() == Some(&0x0A) && frame.iter().filter(|&&b| b == 0x0A).count() == 1;
+                let is_standalone_status_frame = frame.first() == Some(&0x0A)
+                    && frame.iter().filter(|&&b| b == 0x0A).count() == 1;
                 if is_standalone_status_frame {
                     return Ok(NciResponse::Status(s));
                 }

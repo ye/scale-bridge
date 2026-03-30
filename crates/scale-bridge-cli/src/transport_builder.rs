@@ -92,11 +92,13 @@ pub fn build_transport(cli: &Cli) -> Result<AnyTransport, ScaleError> {
 
     #[cfg(feature = "serial")]
     if let Some(port) = &cli.serial_port {
-        return Ok(AnyTransport::Serial(scale_bridge_core::SerialTransport::open(
-            port,
-            cli.baud,
-            to_serialport_parity(&cli.parity),
-        )?));
+        return Ok(AnyTransport::Serial(
+            scale_bridge_core::SerialTransport::open(
+                port,
+                cli.baud,
+                to_serialport_parity(&cli.parity),
+            )?,
+        ));
     }
 
     Err(ScaleError::Transport(std::io::Error::new(

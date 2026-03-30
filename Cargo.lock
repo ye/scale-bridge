@@ -1407,7 +1407,7 @@ checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
 
 [[package]]
 name = "scale-bridge-cli"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "assert_cmd",
  "chrono",
@@ -1428,7 +1428,7 @@ dependencies = [
 
 [[package]]
 name = "scale-bridge-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "serialport",
  "tracing",
@@ -1436,7 +1436,7 @@ dependencies = [
 
 [[package]]
 name = "scale-bridge-scp01"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "proptest",
  "rust_decimal",
@@ -1448,7 +1448,7 @@ dependencies = [
 
 [[package]]
 name = "scale-bridge-server"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "axum",
  "axum-server",

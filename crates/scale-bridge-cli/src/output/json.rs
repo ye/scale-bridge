@@ -20,7 +20,8 @@ struct WeightStatusError<'a> {
 }
 
 pub fn print(response: &NciResponse) -> Result<(), ScaleError> {
-    let json = serde_json::to_string(response).map_err(|e| ScaleError::ParseError(e.to_string()))?;
+    let json =
+        serde_json::to_string(response).map_err(|e| ScaleError::ParseError(e.to_string()))?;
     println!("{json}");
     Ok(())
 }

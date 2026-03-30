@@ -178,9 +178,7 @@ pub fn parse_status_only(frame: &[u8]) -> Result<ScaleStatus, ScaleError> {
             .iter()
             .position(|&b| b == 0x0D)
             .map(|p| p + 1)
-            .ok_or_else(|| {
-                ScaleError::ParseError("no CR after standalone status bytes".into())
-            })?;
+            .ok_or_else(|| ScaleError::ParseError("no CR after standalone status bytes".into()))?;
         return parse_status_bytes(&frame[1..end]);
     }
 
