@@ -114,11 +114,11 @@ Example HTTPS server invocation on macOS:
 
 Tagged releases use GitHub Actions to build downloadable archives for Linux, macOS, and Windows.
 
-- Create and push a version tag such as `v0.1.0`:
+- Create and push a version tag such as `v0.2.0`:
 
 ```bash
-git tag v0.1.0
-git push origin v0.1.0
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
 - The `Release` workflow in `.github/workflows/release.yml` runs on tags matching `v*`.

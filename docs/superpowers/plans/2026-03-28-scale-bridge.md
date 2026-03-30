@@ -105,7 +105,7 @@ predicates = "3"
 ```toml
 [package]
 name = "scale-bridge-core"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [dependencies]
@@ -124,7 +124,7 @@ serial = ["dep:serialport"]
 ```toml
 [package]
 name = "scale-bridge-scp01"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [dependencies]
@@ -143,7 +143,7 @@ rust_decimal = { workspace = true, features = ["macros"] }
 ```toml
 [package]
 name = "scale-bridge-server"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [dependencies]
@@ -156,7 +156,7 @@ tracing = { workspace = true }
 ```toml
 [package]
 name = "scale-bridge-cli"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 [[bin]]
