@@ -17,14 +17,6 @@ fn main() {
         _ => tracing::Level::TRACE,
     };
 
-    let subscriber = tracing_subscriber::fmt()
-        .with_ansi(!cli.systemd)
-        .with_target(false)
-        .with_max_level(max_level)
-        .with_writer(std::io::stderr)
-        .finish();
-    tracing::subscriber::set_global_default(subscriber).ok();
-
     if let Commands::Serve {
         https_port,
         bind,
@@ -32,6 +24,14 @@ fn main() {
         key,
     } = &cli.command
     {
+        let subscriber = tracing_subscriber::fmt()
+            .with_ansi(!cli.systemd)
+            .with_target(false)
+            .with_max_level(max_level)
+            .with_writer(std::io::stdout)
+            .finish();
+        tracing::subscriber::set_global_default(subscriber).ok();
+
         let config = scale_bridge_server::ServerConfig {
             https_port: *https_port,
             bind_addr: bind.clone(),
@@ -48,6 +48,14 @@ fn main() {
         }
         return;
     }
+
+    let subscriber = tracing_subscriber::fmt()
+        .with_ansi(!cli.systemd)
+        .with_target(false)
+        .with_max_level(max_level)
+        .with_writer(std::io::stderr)
+        .finish();
+    tracing::subscriber::set_global_default(subscriber).ok();
 
     let transport = match build_transport(&cli) {
         Ok(t) => t,

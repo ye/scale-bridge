@@ -25,6 +25,7 @@ use std::{
     str::FromStr,
     sync::{Arc, Mutex},
 };
+use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 
 /// Server configuration.
 pub struct ServerConfig {
@@ -290,6 +291,11 @@ fn app(state: AppState) -> Router {
         .route("/api/diagnostic", get(diagnostic))
         .route("/api/zero", post(zero))
         .route("/api/tare", post(tare))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(tracing::Level::INFO))
+                .on_response(DefaultOnResponse::new().level(tracing::Level::INFO)),
+        )
         .with_state(state)
 }
 
