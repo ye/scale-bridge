@@ -10,9 +10,8 @@ fn parse_control_response(frame: &[u8]) -> Result<NciResponse, ScaleError> {
         frame.first() == Some(&0x0A) && frame.iter().filter(|&&b| b == 0x0A).count() == 1;
 
     if is_standalone_status_frame {
-        match status::parse_status_only(frame) {
-            Ok(s) => return Ok(NciResponse::Status(s)),
-            Err(_) => {}
+        if let Ok(s) = status::parse_status_only(frame) {
+            return Ok(NciResponse::Status(s));
         }
     }
 

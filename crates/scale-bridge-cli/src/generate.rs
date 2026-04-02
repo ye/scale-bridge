@@ -1,13 +1,13 @@
 /// Helper binary: generates shell completions and man pages from the CLI definition.
 ///
 /// Usage:
-///   scale-bridge-generate <output-dir>
+///   scale-bridge-generate `<output-dir>`
 ///
 /// Writes:
-///   <output-dir>/completions/scale-bridge.bash
-///   <output-dir>/completions/scale-bridge.zsh
-///   <output-dir>/completions/scale-bridge.fish
-///   <output-dir>/man/scale-bridge.1
+///   `<output-dir>`/completions/scale-bridge.bash
+///   `<output-dir>`/completions/scale-bridge.zsh
+///   `<output-dir>`/completions/scale-bridge.fish
+///   `<output-dir>`/man/scale-bridge.1
 mod args;
 
 use args::Cli;

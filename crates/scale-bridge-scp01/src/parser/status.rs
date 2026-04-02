@@ -57,9 +57,8 @@ pub fn parse_status_bytes(bytes: &[u8]) -> Result<ScaleStatus, ScaleError> {
     if bytes.len() >= 2 {
         let first = bytes[0].to_ascii_uppercase();
         if (first == b'S' || first == b'M') && bytes[1..].iter().all(|b| b.is_ascii_hexdigit()) {
-            let ascii = std::str::from_utf8(bytes).map_err(|e| {
-                ScaleError::ParseError(format!("non-UTF8 ASCII status bytes: {e}"))
-            })?;
+            let ascii = std::str::from_utf8(bytes)
+                .map_err(|e| ScaleError::ParseError(format!("non-UTF8 ASCII status bytes: {e}")))?;
             return parse_ascii_status(ascii);
         }
     }
