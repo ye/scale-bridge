@@ -54,13 +54,12 @@ fn parse_ascii_status(s: &str) -> Result<ScaleStatus, ScaleError> {
 /// Byte 3: b0=range_LSB, b1=net_weight, b2=init_zero_err, b3=reserved,
 ///         b4=always1, b5=always1, b6=byte4_follows, b7=parity
 pub fn parse_status_bytes(bytes: &[u8]) -> Result<ScaleStatus, ScaleError> {
-    if bytes.iter().all(u8::is_ascii) {
-        let ascii = std::str::from_utf8(bytes)
-            .map_err(|e| ScaleError::ParseError(format!("non-UTF8 ASCII status bytes: {e}")))?;
-        if ascii
-            .chars()
-            .all(|ch| ch.is_ascii_alphanumeric() || ch.is_ascii_whitespace())
-        {
+    if bytes.len() >= 2 {
+        let first = bytes[0].to_ascii_uppercase();
+        if (first == b'S' || first == b'M') && bytes[1..].iter().all(|b| b.is_ascii_hexdigit()) {
+            let ascii = std::str::from_utf8(bytes).map_err(|e| {
+                ScaleError::ParseError(format!("non-UTF8 ASCII status bytes: {e}"))
+            })?;
             return parse_ascii_status(ascii);
         }
     }
@@ -368,6 +367,17 @@ mod tests {
         assert!(!status.motion);
         assert!(!status.at_zero);
         assert_eq!(status.raw_status.as_deref(), Some("S10"));
+    }
+
+    #[test]
+    fn binary_status_bytes_not_misrouted_to_ascii_parser() {
+        // 0x31 0x30 are valid binary status bytes (motion=true) that happen to
+        // also be ASCII "10" — they must NOT be routed to the ASCII parser.
+        let b1 = with_parity(0x30 | 0x01); // 0x31 = motion
+        let b2 = with_parity(0x30); // 0x30 = no flags
+        let status = parse_status_bytes(&[b1, b2]).unwrap();
+        assert!(status.motion);
+        assert!(!status.at_zero);
     }
 
     #[test]
