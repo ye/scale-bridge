@@ -1,0 +1,36 @@
+#!/bin/sh
+set -e
+
+echo "Running cargo fmt check..."
+cargo fmt --all --check
+
+echo "Running cargo clippy..."
+cargo clippy --workspace -- -D warnings
+
+# Check version consistency when pushing a version tag (e.g. v0.2.0)
+while read local_ref local_sha remote_ref remote_sha; do
+    case "$local_ref" in
+        refs/tags/v*)
+            tag_version="${local_ref#refs/tags/v}"
+
+            # Collect crate versions that don't match the tag
+            mismatches=""
+            for toml in Cargo.toml crates/*/Cargo.toml; do
+                pkg_name=$(grep -m1 '^name' "$toml" | sed 's/.*= *"\(.*\)"/\1/')
+                pkg_version=$(grep -m1 '^version' "$toml" | sed 's/.*= *"\(.*\)"/\1/')
+                if [ "$pkg_version" != "$tag_version" ]; then
+                    mismatches="$mismatches\n  $pkg_name: $pkg_version (expected $tag_version)"
+                fi
+            done
+
+            if [ -n "$mismatches" ]; then
+                echo ""
+                echo "ERROR: Tag $local_ref does not match crate versions:"
+                printf "$mismatches\n"
+                echo ""
+                echo "Update the version fields in Cargo.toml files and commit before pushing this tag."
+                exit 1
+            fi
+            ;;
+    esac
+done

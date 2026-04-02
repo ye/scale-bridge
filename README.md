@@ -149,6 +149,21 @@ When filing a bug or adding support for a new scale model, include the raw `--ve
 | `just size` | Show release binary size |
 | `just clean` | Clean build artifacts |
 
+## Git Hooks
+
+A `hooks/pre-push` script is included in the repository. It runs `cargo fmt --check` and `cargo clippy` before every push, blocking if either fails.
+
+To install it, symlink or copy it into `.git/hooks`:
+
+```bash
+# symlink (recommended — picks up changes automatically)
+ln -sf ../../hooks/pre-push .git/hooks/pre-push
+
+# or copy
+cp hooks/pre-push .git/hooks/pre-push
+chmod +x .git/hooks/pre-push
+```
+
 ## Supported Commands On Tested Hardware
 
 Verified working on both tested models:

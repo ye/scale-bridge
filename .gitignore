@@ -1,3 +1,4 @@
 /target
 .tmp.txt
 *.pem
+.claude/settings.local.json
