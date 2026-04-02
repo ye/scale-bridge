@@ -9,9 +9,10 @@ use std::time::Duration;
     about = "Avery Weigh-Tronix / NCI / Brecknell scale CLI — SCP-01/NCI protocol",
     long_about = "scale-bridge communicates with Avery Weigh-Tronix digital bench scales\n\
         over serial (RS-232/USB) or Ethernet using the SCP-01/NCI protocol.\n\n\
-        Observed on tested NCI 6720-15 hardware:\n  \
+        Tested hardware: NCI 6720-30, NCI/Avery Weigh-Tronix 7820-50.\n\n\
+        Observed on tested hardware:\n  \
         Serial parity defaults to even.\n  \
-        Status replies may be standalone ASCII frames like S00.\n  \
+        Status replies may be ASCII frames (S00) or binary status bytes.\n  \
         Weight units may be uppercase (for example LB).\n  \
         Unsupported commands may reply with framed '?'.\n\n\
         One-shot mode: query the scale once and exit.\n\

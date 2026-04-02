@@ -369,6 +369,8 @@ mod tests {
         assert_eq!(status.raw_status.as_deref(), Some("S10"));
     }
 
+    /// Regression test for NCI/Avery Weigh-Tronix 7820-50 which sends binary
+    /// status bytes (e.g. 0x31 0x30) that look like ASCII "10".
     #[test]
     fn binary_status_bytes_not_misrouted_to_ascii_parser() {
         // 0x31 0x30 are valid binary status bytes (motion=true) that happen to
